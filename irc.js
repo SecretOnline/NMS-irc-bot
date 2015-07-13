@@ -14,18 +14,25 @@ settings.clients.forEach(function(client) {
   newClient.addListener('message', onMessage);
   clients.push(newClient);
 });
-
+/**
+ * To do when bot recieves a message
+ */
 function onMessage(nick, to, text, message) {
+  // Only operate when ` or ~ is the first character
   if (text.charAt(0) === '`' || text.charAt(0) === '~') {
+    // By default, reply to user
     var replyTo = nick;
+    // If using ~ from a channel, send back to a channel
     if (text.charAt(0) === '~' && to.charAt(0) === '#')
       replyTo = to;
+    // Split into command + array of arguments
     var argArray = text.substring(1).split(' ');
     var comm = argArray[0];
     argArray.splice(0, 1);
-
+    // Array of strings to send
     var replyArray = [];
-
+    /* Special commands */
+    // Stop the server (only devs)
     if (comm === 'stop')
       settings.admins.forEach(function(admin) {
         if (nick === admin) {
@@ -33,8 +40,10 @@ function onMessage(nick, to, text, message) {
         }
       }, this);
     else {
+      // Send all help back to the user, not channel
       if (comm === 'help')
         replyTo = nick;
+      // Get text to send
       try {
         replyArray = bot.get(comm, argArray, nick);
       } catch (err) {
@@ -42,10 +51,11 @@ function onMessage(nick, to, text, message) {
         replyTo = nick;
       }
     }
-    console.log(replyTo);
+    // Send array one item at a time
     replyArray.forEach(function(reply) {
       this.say(replyTo, reply);
     }, this);
   }
+  // Log all input for debugging purposes
   console.log(nick + ': ' + text);
 }

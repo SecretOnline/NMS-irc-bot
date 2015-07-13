@@ -1,69 +1,89 @@
+/**
+ * Returns an array of strings to send
+ */
 function getText(comm, args, from) {
   var returnArray = [];
+  // Get help
   if (comm === 'help')
     return getHelp(args);
+  // Flip words
   else if (comm === 'flip') {
     var flipped = '';
+    // For every word (in reverse)
     for (var i = args.length - 1; i >= 0; i--) {
+      // If it's an emote
       if (args[i].charAt(0) === '~' || args[i].charAt(0) === '`') {
         try {
+          // Try flip the emote
           var emote = getEmote(args[i].substring(1));
           flipped += flip(emote);
         } catch (err) {
+          // Flip the name of the emote
           flipped += flip(args[i]);
         }
       } else
+      // Flip the string
         flipped += flip(args[i]);
       flipped += ' ';
     }
+    // Add to return array
     returnArray.push(flipped);
   } else if (comm === 'meme') {
+    // Get the meme link
     if (args[0] && memes[args[0]]) {
       returnArray.push(getMeme(args[0]));
     }
   } else if (comm === 'say') {
+    // Say, but only if admin
     var rValue;
     JSON.parse(require('fs').readFileSync('settings.json')).admins.forEach(function(admin) {
       if (from === admin) {
-        console.log('it works');
         rValue = args.join(' ');
       }
     }, this);
     returnArray.push(rValue);
   } else if (comm === 'ks') {
+    // Kickstart trivia
     returnArray.push('.trivia kickstart');
   } else if (comm === 'generate') {
+    // A joke, for devinup
     returnArray.push('generating universe');
     var numEmotes = Math.floor(Math.random() * 3) + 2;
     for (var j = 0; j < numEmotes; j++)
       returnArray.push(emotes[Object.keys(emotes)[Math.floor(Math.random() * Object.keys(emotes).length)]]);
     returnArray.push('generation complete');
   } else if (emotes[comm]) {
+    // If there's an emote, send it
     returnArray.push(getEmote(comm));
   } else
     throw 'invalid command: \'' + comm + '\'. please try again';
   return returnArray;
 }
-
+/**
+ * Returns an array of strings to send
+ */
 function getHelp(helpArgs) {
+  // If no number specified, make it 1
   if (helpArgs.length === 0)
     helpArgs.push('1');
-
-  if (helpArgs[0].match(/^[0-9]+$/) && helpArgs[0] <= mainHelp.length) {
+  // If no other arg, show main help
+  if (helpArgs[0].match(/^[0-9]+$/) && helpArgs[0] <= mainHelp.length)
     return mainHelp[helpArgs[0] - 1];
-  }
+  // Now we're past that, if there's no number, add 1
   if (helpArgs.length === 1)
     helpArgs.push('1');
+  // If it's flip help
   if (helpArgs[0] === 'flip')
     if (helpArgs[1].match(/^[0-9]+$/) && helpArgs[1] <= flipHelp.length)
       return flipHelp[helpArgs[0] - 1];
     else
       return flipHelp[0];
-  else if (helpArgs[0] === 'emotes') {
+    // If it's emote listing
+  else if (helpArgs[0] === 'emotes')
     return ['list of emotes', 'type \'~[emote name]\' to use', ' '].concat(Object.keys(emotes));
-  } else if (helpArgs[0] === 'memes') {
+  // Meme listing
+  else if (helpArgs[0] === 'memes')
     return ['list of memes', 'type \'~meme [meme name]\' to use', ' '].concat(Object.keys(memes));
-  }
   return ['Unknown help argument'];
 }
 /**
@@ -200,13 +220,16 @@ for (var i in flipTable) {
 var mainHelp = [
   [
     'secret_bot help',
+    'page 1 of 2',
     'commands can use either \'`\' or \'~\'',
     '` commands are replied to you in a private message (may change)',
     '~ commands are replied to the channel they were sent to',
     'type \'`help 2\' (or \'~help 2\') to see a list of commands'
   ],
   [
+    'page 2 of 2',
     'flip [text to flip]: flip it and reverse it.',
+    'ks: print \'.trivia kickstart\'',
     'meme [meme name]: link to a meme. \'help memes\' to see a list',
     '[emote name]: show unicode emote. \'help emotes\' to see a list'
   ]
