@@ -54,7 +54,7 @@ function onMessage(nick, to, text, message) {
     if (text.charAt(0) === '~' && to.charAt(0) === '#')
       replyTo = to;
     // Split into command + array of arguments
-    var argArray = text.substring(1).split(' ');
+    var argArray = text.split(' ');
     var comm = argArray[0];
     argArray.splice(0, 1);
     // Array of strings to send
@@ -77,7 +77,7 @@ function onMessage(nick, to, text, message) {
       } catch (err) {
         replyArray = [err, 'this error has been logged'];
         replyTo = nick;
-        bot.error([err.name, err.message, message], nick, true);
+        bot.error([err, message.args.splice(1).join(' ')], nick, true);
       }
     }
     // Send array one item at a time

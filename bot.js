@@ -2,6 +2,7 @@
  * Returns an array of strings to send
  */
 function getText(comm, args, from) {
+  comm = comm.substring(1);
   var returnArray = [];
   // Get help
   if (comm === 'help')
@@ -10,12 +11,6 @@ function getText(comm, args, from) {
   else if (comm === 'flip') {
     // Add to return array
     returnArray.push(flip(processText(args, from)));
-  } else
-  // Get the meme link
-  if (comm === 'meme') {
-    if (args[0] && memes[args[0]]) {
-      returnArray.push(getMeme(args[0]));
-    }
   } else
   // Say, but only if admin
   if (comm === 'say') {
@@ -28,8 +23,12 @@ function getText(comm, args, from) {
     returnArray.push(rValue);
   } else
   // Wikipedia links
-  if (comm === 'wiki' && args.length > 0) {
-    var url = 'https://en.wikipedia.org/wiki/' + toTitleCase(processText(args, from));
+  if (comm === 'wiki') {
+    var url = 'https://en.wikipedia.org/wiki/';
+    if (args.length > 0)
+      url += toTitleCase(processText(args, from));
+    else
+      url += 'Main_Page';
     url = url.replace(/ /g, '_');
     url = encodeURI(url);
     url = url.replace(/'/g, '%27');
@@ -37,39 +36,39 @@ function getText(comm, args, from) {
   } else
   // Kickstart trivia
   if (comm === 'ks') {
-    returnArray.push('.trivia kickstart');
+    returnArray.push('.trivia kickstart ' + processText(args, from));
   } else
   // NMS FAQ
   if (comm === 'faq') {
-    returnArray.push('https://www.reddit.com/r/NoMansSkyTheGame/wiki/faq');
+    returnArray.push('https://www.reddit.com/r/NoMansSkyTheGame/wiki/faq ' + processText(args, from));
   } else
   // Release
   if (comm === 'release') {
     returnArray.push('Estimated date of release:');
     returnArray.push('Soon ™');
+    if (args.length)
+      returnArray.push(processText(args, from));
   } else
   // Release
   if (comm === 'hint') {
-    returnArray.push('what. you think i know the answer?');
+    returnArray.push('what. you think i know the answer? ' + processText(args, from));
   } else
-  // // A joke, for devinup
-  // if (comm === 'generate') {
-  //   returnArray.push('generating universe');
-  //   var numEmotes = Math.floor(Math.random() * 3) + 2;
-  //   for (var j = 0; j < numEmotes; j++)
-  //     returnArray.push(emotes[Object.keys(emotes)[Math.floor(Math.random() * Object.keys(emotes).length)]]);
-  //   returnArray.push('generation complete');
-  // } else
-  // If there's an emote, send it
   // REPORT
   if (comm === 'report') {
     addToReportLog([args.join(' ')], from);
     returnArray.push('An error has been logged. Thanks ' + from);
   } else
+  // Get the meme link
+  if (comm === 'meme') {
+    if (args[0] && memes[args[0]]) {
+      returnArray.push(getMeme(args[0]));
+    }
+  } else
+  // Emotes
   if (emotes[comm]) {
     returnArray.push(getEmote(comm) + ' ' + processText(args, from));
   } else
-    throw 'invalid command: \'' + comm + '\'. please try again';
+    return ['invalid command: \'' + comm + '\'. please try again'];
   return returnArray;
 }
 
@@ -83,7 +82,7 @@ function processText(words, from) {
     // If it's a command
     if (words[i].charAt(0) === '~' || words[i].charAt(0) === '`') {
       // Split off into command and ne arguments
-      var newComm = words[i].substring(1);
+      var newComm = words[i];
       var newArgs = words.splice(i + 1);
       // Get the result, and flip it
       var newString = getText(newComm, newArgs, from).join(' ');
@@ -124,11 +123,12 @@ var emotes = {
   'disapprovedance': '┌( ಠ_ಠ)┘',
   'dongers': 'ヽ༼ຈل͜ຈ༽ﾉ',
   'dongers?': '┌༼◉ل͟◉༽┐',
+  'dongersmob': 'ヽ༼ຈل͜ຈヽ༼ຈل͜ຈヽ༼ຈل͜ຈヽ༼ຈل͜ຈ༽ﾉل͜ຈ༽ﾉل͜ຈ༽ﾉل͜ຈ༽ﾉ',
   'fliptable': '(╯°□°)╯︵ ┻━┻',
   'FLIPTABLE': '(ノಠ益ಠ)ノ彡┻━┻',
   'flipdouble': '┻━┻ ︵ヽ(`Д´)ﾉ︵ ┻━┻',
   'unfliptable': '┬──┬ ノ( ゜-゜ノ)',
-  'UNFLIPTABLE': '┬──┬ ノ(゜益゜ ノ)',
+  'UNFLIPTABLE': '┬──┬ ノ(゜益゜ノ)',
   'fliptable?': '┬─┬﻿ ︵ /(.□. \\)',
   'fu': 'ಠ︵ಠ凸',
   'lenny': '( ͡° ͜ʖ ͡°)',
