@@ -1,8 +1,9 @@
 /**
  * Returns an array of strings to send
  */
-function getText(comm, args, from) {
-  comm = comm.substring(1);
+function getText(args, from) {
+  // Split into command + arguments for that command
+  var comm = args.splice(0, 1)[0].substring(1);
   var returnArray = [];
   // Get help
   if (comm === 'help')
@@ -85,15 +86,14 @@ function processText(words, from) {
       str += ' ';
     // If it's a command
     if (words[i].charAt(0) === '~' || words[i].charAt(0) === '`') {
-      // Split off into command and ne arguments
-      var newComm = words[i];
-      var newArgs = words.splice(i + 1);
-      // Get the result, and flip it
-      var newString = getText(newComm, newArgs, from).join(' ');
+      // Split into new arguments
+      var newArgs = words.splice(i);
+      // Get the result, and add it on
+      var newString = getText(newArgs, from).join(' ');
       str += newString;
       break;
     } else
-    // Flip the string
+    // Just add the string
       str += words[i];
   }
 
@@ -328,7 +328,6 @@ var wikiHelp = [
 function addToReportLog(messageArray, from, isCrash) {
   var fs = require('fs');
   var reports = JSON.parse(fs.readFileSync('reports.json')) || [];
-  console.log(reports);
   var dateString = new Date(Date.now()).toISOString();
   var newReport = {
     'from': from,

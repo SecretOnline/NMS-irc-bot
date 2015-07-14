@@ -56,7 +56,6 @@ function onMessage(nick, to, text, message) {
     // Split into command + array of arguments
     var argArray = text.split(' ');
     var comm = argArray[0];
-    argArray.splice(0, 1);
     // Array of strings to send
     var replyArray = [];
     /* Special commands */
@@ -73,7 +72,7 @@ function onMessage(nick, to, text, message) {
         replyTo = nick;
       // Get text to send
       try {
-        replyArray = bot.get(comm, argArray, nick);
+        replyArray = bot.get(argArray, nick);
       } catch (err) {
         replyArray = [err, 'this error has been logged'];
         replyTo = nick;
