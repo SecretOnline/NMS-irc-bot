@@ -7,6 +7,10 @@ function getText(comm, args, from) {
   // Get help
   if (comm === 'help')
     return getHelp(args);
+  // Bot source
+  else if (comm === 'source') {
+    returnArray.push('https://github.com/SecretOnline/NMS-irc-bot/ ' + processText(args, from));
+  } else
   // Flip words
   else if (comm === 'flip') {
     // Add to return array
