@@ -12,7 +12,7 @@ function getText(comm, args, from) {
     returnArray.push('https://github.com/SecretOnline/NMS-irc-bot/ ' + processText(args, from));
   } else
   // Flip words
-  else if (comm === 'flip') {
+  if (comm === 'flip') {
     // Add to return array
     returnArray.push(flip(processText(args, from)));
   } else
