@@ -1,6 +1,7 @@
 settings.json
 reports.json
 *.bat
+*-old.*
 
 # Windows image file caches
 Thumbs.db

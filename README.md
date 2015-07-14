@@ -20,16 +20,17 @@ I wouldn't want to give my password away, would I.
 
 `reports.json`
 
-Crash (and user) reports go here. Make sure this file exists with an empty array in it (`[]`), or it will crash (maybe a little ironic).
+Crash (and user) reports go here. 
 
 ##settings.json
 
 ``` json
 {
-  "user": "username for the bot",
-  "pass": "password for the bot",
   "clients":[
     {
+      "user": "username for the bot",
+      "realName": "another name",
+      "pass": "password for the bot",
       "server": "address of a server",
       "channels": [
         "#somechannel"

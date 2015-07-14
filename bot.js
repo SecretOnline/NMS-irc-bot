@@ -1,3 +1,113 @@
+var irc = require('irc');
+
+/**
+ * Define Bot object
+ */
+var Bot = function(client, admins) {
+  // Create an IRC client
+  irc.Client.call(this, client.server, client.user, {
+    'userName': client.user,
+    'realName': client.realName,
+    'autoConnect': 0
+  });
+
+  this.clientSettings = client;
+  this.clientAdmins = admins;
+  // Event listeners
+  this.addListener('message', onMessage);
+  this.addListener('registered', checkUsername);
+  this.addListener('notice', tryLogin);
+  // Connect the bot to the server once rest of constructor is done
+  this.connect();
+};
+
+// Extend the irc.Client prototype
+Bot.prototype = Object.create(irc.Client.prototype, {
+  getText: {
+    value: getText,
+    enumerable: true,
+    configurable: true,
+    writable: true
+  },
+  flip: {
+    value: flip,
+    enumerable: true,
+    configurable: true,
+    writable: true
+  }
+});
+
+/**
+ * Perform a check to see if the username is already taken
+ * If so, message NickServ to ghost back the name
+ */
+function checkUsername(message) {
+  // If the username has been taken, and a new one (with a number on the end) has been assigned
+  // try to Ghost the other user
+  if (nick.match(new RegExp(clientSettings.user + '[0-9]+'))) {
+    say('nickserv', 'ghost ' + clientSettings.user + ' ' + clientSettings.pass);
+  }
+}
+
+/**
+ * Check if NickServ has sent the right messages
+ * Log in, and once logged in, join the channels
+ */
+function tryLogin(nick, to, text, message) {
+  try {
+    console.log(message.args.join(' '));
+    // Log in once NickSev sends the right messages
+    if (nick === 'NickServ' && message.args.join(' ').match(/This nickname is registered and protected\./)) {
+      say('nickserv', 'identify ' + clientSettings.pass);
+    } else
+    // When logged in, join the channels
+    if (nick === 'NickServ' && message.args.join(' ').match(/Password accepted/)) {
+      clientSettings.channels.forEach(function(channel) {
+        this.join(channel);
+      }, this);
+      removeListener('notice', tryLogin);
+    }
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+/**
+ * To do when bot recieves a message
+ */
+function onMessage(nick, to, text, message) {
+  // Only operate when ` or ~ is the first character
+  if (text.charAt(0) === '`' || text.charAt(0) === '~') {
+    // By default, reply to user
+    var replyTo = nick;
+    // If using ~ from a channel, send back to a channel
+    if (text.charAt(0) === '~' && to.charAt(0) === '#')
+      replyTo = to;
+    // Split into command + array of arguments
+    var argArray = text.split(' ');
+    var comm = argArray[0];
+    // Array of strings to send
+    var replyArray = [];
+    // Send all help back to the user, not channel
+    if (comm === 'help' || comm === 'report')
+      replyTo = nick;
+    // Get text to send
+    try {
+      replyArray = getText(argArray, nick);
+    } catch (err) {
+      replyArray = [err, 'this error has been logged'];
+      replyTo = nick;
+      addToReportLog([err, message.args.splice(1).join(' ')], nick, true);
+    }
+    // Send array one item at a time
+    replyArray.forEach(function(reply) {
+      say(replyTo, reply);
+    }, this);
+  }
+  // Log all input for debugging purposes
+  console.log(nick + ': ' + text);
+}
+
 /**
  * Returns an array of strings to send
  */
@@ -5,6 +115,18 @@ function getText(args, from) {
   // Split into command + arguments for that command
   var comm = args.splice(0, 1)[0].substring(1);
   var returnArray = [];
+  // Stop the bot, but only if admin
+  if (comm === 'stop') {
+    if (isAdmin(from))
+      disconnect('hammer time');
+  } else
+  // Say, but only if admin
+  if (comm === 'say') {
+    var rValue;
+    if (isAdmin(from))
+      rValue = processText(args, from);
+    returnArray.push(rValue);
+  } else
   // Get help
   if (comm === 'help')
     return getHelp(args);
@@ -16,16 +138,6 @@ function getText(args, from) {
   if (comm === 'flip') {
     // Add to return array
     returnArray.push(flip(processText(args, from)));
-  } else
-  // Say, but only if admin
-  if (comm === 'say') {
-    var rValue;
-    JSON.parse(require('fs').readFileSync('settings.json')).admins.forEach(function(admin) {
-      if (from === admin) {
-        rValue = processText(args, from);
-      }
-    }, this);
-    returnArray.push(rValue);
   } else
   // Wikipedia links
   if (comm === 'wiki') {
@@ -98,6 +210,16 @@ function processText(words, from) {
   }
 
   return str;
+}
+
+function isAdmin(name) {
+  var ret = false;
+  this.clientAdmins.forEach(function(admin) {
+    if (name === admin) {
+      ret = true;
+    }
+  });
+  return ret;
 }
 
 /**
@@ -288,6 +410,7 @@ var mainHelp = [
   ],
   [
     'page 2 of 2',
+    '[emote name]: show unicode emote. \'help emotes\' to see a list',
     'faq: link to the /r/NoMansSkyTheGame faq',
     'flip [text to flip]: flip it and reverse it.',
     'ks: print \'.trivia kickstart\'',
@@ -295,7 +418,7 @@ var mainHelp = [
     'meme [meme name]: link to a meme. \'help memes\' to see a list',
     'report [description of error]: write an error report',
     'say [text to say]: make secret_bot say some text',
-    '[emote name]: show unicode emote. \'help emotes\' to see a list'
+    'source: link to the source code of the bot'
   ]
 ];
 var flipHelp = [
@@ -327,7 +450,12 @@ var wikiHelp = [
  */
 function addToReportLog(messageArray, from, isCrash) {
   var fs = require('fs');
-  var reports = JSON.parse(fs.readFileSync('reports.json')) || [];
+  var reports;
+  try {
+    reports = JSON.parse(fs.readFileSync('reports.json'));
+  } catch (err) {
+    reports = [];
+  }
   var dateString = new Date(Date.now()).toISOString();
   var newReport = {
     'from': from,
@@ -342,6 +470,5 @@ function addToReportLog(messageArray, from, isCrash) {
 }
 
 module.exports = {
-  'get': getText,
-  'error': addToReportLog
+  "Bot": Bot
 };
