@@ -29,13 +29,26 @@ Bot.prototype = Object.create(irc.Client.prototype, {
     configurable: true,
     writable: true
   },
-  flip: {
-    value: flip,
+  addToReportLog: {
+    value: addToReportLog,
+    enumerable: true,
+    configurable: true,
+    writable: true
+  },
+  onMessage: {
+    value: onMessage,
+    enumerable: true,
+    configurable: true,
+    writable: true
+  },
+  flipTable: {
+    value: flipTable,
     enumerable: true,
     configurable: true,
     writable: true
   }
 });
+
 
 /**
  * Perform a check to see if the username is already taken
@@ -44,8 +57,8 @@ Bot.prototype = Object.create(irc.Client.prototype, {
 function checkUsername(message) {
   // If the username has been taken, and a new one (with a number on the end) has been assigned
   // try to Ghost the other user
-  if (nick.match(new RegExp(clientSettings.user + '[0-9]+'))) {
-    say('nickserv', 'ghost ' + clientSettings.user + ' ' + clientSettings.pass);
+  if (this.nick.match(new RegExp(this.clientSettings.user + '[0-9]+'))) {
+    this.say('nickserv', 'ghost ' + this.clientSettings.user + ' ' + this.clientSettings.pass);
   }
 }
 
@@ -58,14 +71,14 @@ function tryLogin(nick, to, text, message) {
     console.log(message.args.join(' '));
     // Log in once NickSev sends the right messages
     if (nick === 'NickServ' && message.args.join(' ').match(/This nickname is registered and protected\./)) {
-      say('nickserv', 'identify ' + clientSettings.pass);
+      this.say('nickserv', 'identify ' + this.clientSettings.pass);
     } else
     // When logged in, join the channels
     if (nick === 'NickServ' && message.args.join(' ').match(/Password accepted/)) {
-      clientSettings.channels.forEach(function(channel) {
+      this.clientSettings.channels.forEach(function(channel) {
         this.join(channel);
       }, this);
-      removeListener('notice', tryLogin);
+      this.removeListener('notice', tryLogin);
     }
   } catch (err) {
     console.log(err);
@@ -93,15 +106,15 @@ function onMessage(nick, to, text, message) {
       replyTo = nick;
     // Get text to send
     try {
-      replyArray = getText(argArray, nick);
+      replyArray = this.getText(argArray, nick);
     } catch (err) {
       replyArray = [err, 'this error has been logged'];
       replyTo = nick;
-      addToReportLog([err, message.args.splice(1).join(' ')], nick, true);
+      this.addToReportLog([err, message.args.splice(1).join(' ')], nick, true);
     }
     // Send array one item at a time
     replyArray.forEach(function(reply) {
-      say(replyTo, reply);
+      this.say(replyTo, reply);
     }, this);
   }
   // Log all input for debugging purposes
@@ -118,7 +131,7 @@ function getText(args, from) {
   // Stop the bot, but only if admin
   if (comm === 'stop') {
     if (isAdmin(from))
-      disconnect('hammer time');
+      this.disconnect('hammer time');
   } else
   // Say, but only if admin
   if (comm === 'say') {
@@ -151,6 +164,16 @@ function getText(args, from) {
     url = url.replace(/'/g, '%27');
     returnArray.push(url);
   } else
+  // Google links
+  if (comm === 'google') {
+    var url = 'https://www.google.com/';
+    if (args.length > 0)
+      url += 'search?q=' + processText(args, from);
+    url = url.replace(/ /g, '+');
+    url = encodeURI(url);
+    url = url.replace(/'/g, '%27');
+    returnArray.push(url);
+  } else
   // Kickstart trivia
   if (comm === 'ks') {
     returnArray.push('.trivia kickstart ' + processText(args, from));
@@ -161,10 +184,11 @@ function getText(args, from) {
   } else
   // Release
   if (comm === 'release') {
-    returnArray.push('Estimated date of release:');
-    returnArray.push('Soon ™');
     if (args.length)
-      returnArray.push(processText(args, from));
+      returnArray.push('Estimated ' + processText(args, from));
+    else
+      returnArray.push('Estimated date of release:');
+    returnArray.push('Soon ™');
   } else
   // Release
   if (comm === 'hint') {
@@ -172,8 +196,8 @@ function getText(args, from) {
   } else
   // REPORT
   if (comm === 'report') {
-    addToReportLog([args.join(' ')], from);
-    returnArray.push('An error has been logged. Thanks ' + from);
+    addToReportLog([processText(args, from)], from);
+    returnArray.push('your error has been logged. Thanks ' + from);
   } else
   // Get the meme link
   if (comm === 'meme') {
@@ -272,7 +296,7 @@ var emotes = {
   'whyy': 'щ(ಥДಥщ)',
   'woo': '\\o/',
   'whattheshrug': '﻿¯\\(ºдಠ)/¯',
-  'zoidberg': '(\\/) (°,,°) (\\/)',
+  'zoidberg': '(\\/) (°,,°) (\\/)'
 };
 
 /**
@@ -340,7 +364,7 @@ var flipTable = {
   '\u2045': '\u2046',
   '\u2234': '\u2235',
   'A': '∀',
-  //'B': '',
+  'B': '\u029A',
   'C': '\u0186',
   'D': '\u2C6D',
   'E': '\u018E',
@@ -356,7 +380,7 @@ var flipTable = {
   'T': '\u2534',
   'U': '\u2229',
   'V': '\u039B',
-  'Y': '\u028E',
+  'Y': '\u03BB',
   '（': '）'
 };
 for (var i in flipTable) {
@@ -470,5 +494,9 @@ function addToReportLog(messageArray, from, isCrash) {
 }
 
 module.exports = {
-  "Bot": Bot
+  getText: getText,
+  processText: processText,
+  onMessage: onMessage,
+  addToReportLog: addToReportLog,
+  Bot: Bot
 };
