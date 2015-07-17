@@ -106,11 +106,11 @@ function onMessage(nick, to, text, message) {
       replyTo = nick;
     // Get text to send
     try {
-      replyArray = this.getText(argArray, nick);
+      replyArray = this.getText(argArray, nick, replyTo);
     } catch (err) {
       replyArray = [err, 'this error has been logged'];
       replyTo = nick;
-      this.addToReportLog([err, message.args.splice(1).join(' ')], nick, true);
+      this.addToReportLog([err.message, message.args.splice(1).join(' ')], nick, true);
     }
     // Send array one item at a time
     replyArray.forEach(function(reply) {
@@ -124,7 +124,7 @@ function onMessage(nick, to, text, message) {
 /**
  * Returns an array of strings to send
  */
-function getText(args, from) {
+function getText(args, from, to) {
   // Split into command + arguments for that command
   var comm = args.splice(0, 1)[0].substring(1);
   var returnArray = [];
@@ -135,9 +135,9 @@ function getText(args, from) {
   } else
   // Say, but only if admin
   if (comm === 'say') {
-    var rValue;
+    var rValue = '';
     if (isAdmin(from))
-      rValue = processText(args, from);
+      rValue = processText(args, from, to);
     returnArray.push(rValue);
   } else
   // Get help
@@ -145,18 +145,18 @@ function getText(args, from) {
     return getHelp(args);
   // Bot source
   else if (comm === 'source') {
-    returnArray.push('https://github.com/SecretOnline/NMS-irc-bot/ ' + processText(args, from));
+    returnArray.push('https://github.com/SecretOnline/NMS-irc-bot/ ' + processText(args, from, to));
   } else
   // Flip words
   if (comm === 'flip') {
     // Add to return array
-    returnArray.push(flip(processText(args, from)));
+    returnArray.push(flip(processText(args, from, to)));
   } else
   // Wikipedia links
   if (comm === 'wiki') {
     var url = 'https://en.wikipedia.org/wiki/';
     if (args.length > 0)
-      url += toTitleCase(processText(args, from));
+      url += toTitleCase(processText(args, from, to));
     else
       url += 'Main_Page';
     url = url.replace(/ /g, '_');
@@ -168,7 +168,17 @@ function getText(args, from) {
   if (comm === 'google') {
     var url = 'https://www.google.com/';
     if (args.length > 0)
-      url += 'search?q=' + processText(args, from);
+      url += 'search?q=' + processText(args, from, to);
+    url = url.replace(/ /g, '+');
+    url = encodeURI(url);
+    url = url.replace(/'/g, '%27');
+    returnArray.push(url);
+  } else
+  // Let me Google that for you
+  if (comm === 'lmgtfy') {
+    var url = 'http://lmgtfy.com/';
+    if (args.length > 0)
+      url += '?q=' + processText(args, from, to);
     url = url.replace(/ /g, '+');
     url = encodeURI(url);
     url = url.replace(/'/g, '%27');
@@ -176,28 +186,38 @@ function getText(args, from) {
   } else
   // Kickstart trivia
   if (comm === 'ks') {
-    returnArray.push('.trivia kickstart ' + processText(args, from));
+    returnArray.push('.trivia kickstart ' + processText(args, from, to));
   } else
   // NMS FAQ
   if (comm === 'faq') {
-    returnArray.push('https://www.reddit.com/r/NoMansSkyTheGame/wiki/faq ' + processText(args, from));
+    returnArray.push('https://www.reddit.com/r/NoMansSkyTheGame/wiki/faq ' + processText(args, from, to));
   } else
   // Release
   if (comm === 'release') {
+    var result = 'Really Soon ™';
+    args.forEach(function(arg) {
+      if (emotes[arg.substring(1)])
+        result = 'Right Now ™';
+    });
+
     if (args.length)
-      returnArray.push('Estimated ' + processText(args, from));
+      returnArray.push('Estimated ' + processText(args, from, to));
     else
       returnArray.push('Estimated date of release:');
-    returnArray.push('Soon ™');
+    returnArray.push(result);
+  } else
+  // Release
+  if (comm === 'countdown') {
+    returnArray.push('http://secretonline.github.io/NMS-Countdown');
   } else
   // Release
   if (comm === 'hint') {
-    returnArray.push('what. you think i know the answer? ' + processText(args, from));
+    returnArray.push('what. you think i know the answer? ' + processText(args, from, to));
   } else
   // REPORT
   if (comm === 'report') {
-    addToReportLog([processText(args, from)], from);
-    returnArray.push('your error has been logged. Thanks ' + from);
+    addToReportLog([processText(args, from, to)], from);
+    returnArray.push('your error has been logged. Thanks ' + from, to);
   } else
   // Get the meme link
   if (comm === 'meme') {
@@ -207,13 +227,13 @@ function getText(args, from) {
   } else
   // Emotes
   if (emotes[comm]) {
-    returnArray.push(getEmote(comm) + ' ' + processText(args, from));
+    returnArray.push(getEmote(comm) + ' ' + processText(args, from, to));
   } else
     return ['invalid command: \'' + comm + '\'. please try again'];
   return returnArray;
 }
 
-function processText(words, from) {
+function processText(words, from, to) {
   var str = '';
 
   for (var i = 0; i < words.length; i++) {
@@ -225,7 +245,7 @@ function processText(words, from) {
       // Split into new arguments
       var newArgs = words.splice(i);
       // Get the result, and add it on
-      var newString = getText(newArgs, from).join(' ');
+      var newString = getText(newArgs, from, to).join(' ');
       str += newString;
       break;
     } else
@@ -286,6 +306,7 @@ var emotes = {
   'lennymoney': '[̲̅$̲̅(̲̅ ͡° ͜ʖ ͡°̲̅)̲̅$̲̅]',
   'lennywall': '┬┴┬┴┤( ͡° ͜ʖ├┬┴┬┴',
   'lennywink': '( ͡~ ͜ʖ ͡°)',
+  'mindblow': 'http://i.imgur.com/8pTSVjV.gif',
   'orly': '﴾͡๏̯͡๏﴿ O\'RLY?',
   'rage': 'ლ(ಠ益ಠლ)',
   'robot': '╘[◉﹃◉]╕',

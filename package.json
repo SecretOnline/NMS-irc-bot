@@ -1,0 +1,19 @@
+{
+  "name": "NMS-irc-bot",
+  "version": "1.1.2",
+  "description": "NMS IRC bot",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SecretOnline/NMS-irc-bot.git"
+  },
+  "author": "secret_online",
+  "bugs": {
+    "url": "https://github.com/SecretOnline/NMS-irc-bot/issues"
+  },
+  "homepage": "https://github.com/SecretOnline/NMS-irc-bot#readme",
+  "dependencies": {
+    "hotload": "0.0.5",
+    "irc": "^0.3.12"
+  }
+}
+
