@@ -15,6 +15,7 @@ var Bot = function(client, admins) {
   this.clientAdmins = admins;
   // Event listeners
   this.addListener('message', onMessage);
+  this.addListener('join', onJoin);
   this.addListener('registered', checkUsername);
   this.addListener('notice', tryLogin);
   // Connect the bot to the server once rest of constructor is done
@@ -37,6 +38,12 @@ Bot.prototype = Object.create(irc.Client.prototype, {
   },
   onMessage: {
     value: onMessage,
+    enumerable: true,
+    configurable: true,
+    writable: true
+  },
+  onJoin: {
+    value: onJoin,
     enumerable: true,
     configurable: true,
     writable: true
@@ -122,6 +129,25 @@ function onMessage(nick, to, text, message) {
 }
 
 /**
+ * To do when bot recieves a message
+ */
+function onJoin(channel, nick, message) {
+  var replyArray;
+  if (nick === 'Trentosaurus') {
+    replyArray = ['Trent\'s here!', 'raise your ' + emotes['dongers']];
+  } else if (nick === 'secret_online') {
+    console.log('it works!');
+  }
+
+  if (replyArray)
+    replyArray.forEach(function(reply) {
+      this.say(channel, reply);
+    }, this);
+
+  console.log(nick + ' joined ' + channel);
+}
+
+/**
  * Returns an array of strings to send
  */
 function getText(args, from, to) {
@@ -195,16 +221,20 @@ function getText(args, from, to) {
   // Release
   if (comm === 'release') {
     var result = 'Really Soon ™';
-    args.forEach(function(arg) {
-      if (emotes[arg.substring(1)])
-        result = 'Right Now ™';
-    });
+    var showCountdown = true;
 
-    if (args.length)
-      returnArray.push('Estimated ' + processText(args, from, to));
-    else
-      returnArray.push('Estimated date of release:');
+    if (args.length) {
+      returnArray.push('Estimated release of ' + processText(args, from, to) + ':');
+      args.forEach(function(arg) {
+        if (emotes[arg.substring(1)])
+          result = 'Right Now ™';
+      });
+      showCountdown = false;
+    } else
+      returnArray.push('Estimated release of No Man\'s Sky: ');
     returnArray.push(result);
+    if (showCountdown)
+      returnArray.push('(when we have a date, go to ~countdown for a, well, countdown)');
   } else
   // Release
   if (comm === 'countdown') {
@@ -218,6 +248,14 @@ function getText(args, from, to) {
   if (comm === 'report') {
     addToReportLog([processText(args, from, to)], from);
     returnArray.push('your error has been logged. Thanks ' + from, to);
+  } else
+  // A joke, for devinup
+  if (comm === 'generate') {
+    returnArray.push('generating universe');
+    var numEmotes = Math.floor(Math.random() * 3) + 2;
+    for (var j = 0; j < numEmotes; j++)
+      returnArray.push(emotes[Object.keys(emotes)[Math.floor(Math.random() * Object.keys(emotes).length)]]);
+    returnArray.push('generation complete');
   } else
   // Get the meme link
   if (comm === 'meme') {
@@ -299,13 +337,14 @@ var emotes = {
   'flipdouble': '┻━┻ ︵ヽ(`Д´)ﾉ︵ ┻━┻',
   'unfliptable': '┬──┬ ノ( ゜-゜ノ)',
   'UNFLIPTABLE': '┬──┬ ノ(゜益゜ノ)',
-  'fliptable?': '┬─┬﻿ ︵ /(.□. \\)',
+  'fliptable?': '┬──┬ ︵ /(.□. \\)',
   'fu': 'ಠ︵ಠ凸',
   'lenny': '( ͡° ͜ʖ ͡°)',
   'lennymob': '( ͡° ͜ʖ ( ͡° ͜ʖ ( ͡° ͜ʖ ( ͡° ͜ʖ ͡°) ͜ʖ ͡°)ʖ ͡°)ʖ ͡°)',
   'lennymoney': '[̲̅$̲̅(̲̅ ͡° ͜ʖ ͡°̲̅)̲̅$̲̅]',
   'lennywall': '┬┴┬┴┤( ͡° ͜ʖ├┬┴┬┴',
   'lennywink': '( ͡~ ͜ʖ ͡°)',
+  'lenny?': '( ͠° ͟ʖ ͡°)',
   'mindblow': 'http://i.imgur.com/8pTSVjV.gif',
   'orly': '﴾͡๏̯͡๏﴿ O\'RLY?',
   'rage': 'ლ(ಠ益ಠლ)',
