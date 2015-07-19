@@ -1,62 +1,3 @@
-var irc = require('irc');
-
-/**
- * Define Bot object
- */
-var Bot = function(client, admins) {
-  // Create an IRC client
-  irc.Client.call(this, client.server, client.user, {
-    'userName': client.user,
-    'realName': client.realName,
-    'autoConnect': 0
-  });
-
-  this.clientSettings = client;
-  this.clientAdmins = admins;
-  // Event listeners
-  this.addListener('message', onMessage);
-  this.addListener('join', onJoin);
-  this.addListener('registered', checkUsername);
-  this.addListener('notice', tryLogin);
-  // Connect the bot to the server once rest of constructor is done
-  this.connect();
-};
-
-// Extend the irc.Client prototype
-Bot.prototype = Object.create(irc.Client.prototype, {
-  getText: {
-    value: getText,
-    enumerable: true,
-    configurable: true,
-    writable: true
-  },
-  addToReportLog: {
-    value: addToReportLog,
-    enumerable: true,
-    configurable: true,
-    writable: true
-  },
-  onMessage: {
-    value: onMessage,
-    enumerable: true,
-    configurable: true,
-    writable: true
-  },
-  onJoin: {
-    value: onJoin,
-    enumerable: true,
-    configurable: true,
-    writable: true
-  },
-  flipTable: {
-    value: flipTable,
-    enumerable: true,
-    configurable: true,
-    writable: true
-  }
-});
-
-
 /**
  * Perform a check to see if the username is already taken
  * If so, message NickServ to ghost back the name
@@ -113,11 +54,11 @@ function onMessage(nick, to, text, message) {
       replyTo = nick;
     // Get text to send
     try {
-      replyArray = this.getText(argArray, nick, replyTo);
+      replyArray = getText(argArray, nick, replyTo);
     } catch (err) {
       replyArray = [err, 'this error has been logged'];
       replyTo = nick;
-      this.addToReportLog([err.message, message.args.splice(1).join(' ')], nick, true);
+      addToReportLog([err.message, message.args.splice(1).join(' ')], nick, true);
     }
     // Send array one item at a time
     replyArray.forEach(function(reply) {
@@ -135,8 +76,6 @@ function onJoin(channel, nick, message) {
   var replyArray;
   if (nick === 'Trentosaurus') {
     replyArray = ['Trent\'s here!', 'raise your ' + emotes['dongers']];
-  } else if (nick === 'secret_online') {
-    console.log('it works!');
   }
 
   if (replyArray)
@@ -145,6 +84,30 @@ function onJoin(channel, nick, message) {
     }, this);
 
   console.log(nick + ' joined ' + channel);
+}
+
+/**
+ * Add message array to log
+ */
+function addToReportLog(messageArray, from, isCrash) {
+  var fs = require('fs');
+  var reports;
+  try {
+    reports = JSON.parse(fs.readFileSync('reports.json'));
+  } catch (err) {
+    reports = [];
+  }
+  var dateString = new Date(Date.now()).toISOString();
+  var newReport = {
+    'from': from,
+    'at': dateString,
+    'messages': messageArray,
+    'type': 'user report'
+  };
+  if (isCrash)
+    newReport.type = 'crash';
+  reports.push(newReport);
+  fs.writeFileSync('reports.json', JSON.stringify(reports, null, 2));
 }
 
 /**
@@ -529,34 +492,13 @@ var wikiHelp = [
   ]
 ];
 
-/**
- * Add message array to log
- */
-function addToReportLog(messageArray, from, isCrash) {
-  var fs = require('fs');
-  var reports;
-  try {
-    reports = JSON.parse(fs.readFileSync('reports.json'));
-  } catch (err) {
-    reports = [];
-  }
-  var dateString = new Date(Date.now()).toISOString();
-  var newReport = {
-    'from': from,
-    'at': dateString,
-    'messages': messageArray,
-    'type': 'user report'
-  };
-  if (isCrash)
-    newReport.type = 'crash';
-  reports.push(newReport);
-  fs.writeFileSync('reports.json', JSON.stringify(reports, null, 2));
-}
-
 module.exports = {
   getText: getText,
+  getHelp: getHelp,
   processText: processText,
+  emotes: emotes,
   onMessage: onMessage,
-  addToReportLog: addToReportLog,
-  Bot: Bot
+  onJoin: onJoin,
+  checkUsername: checkUsername,
+  tryLogin: tryLogin
 };

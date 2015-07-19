@@ -1,30 +1,26 @@
+var irc = require('irc');
 var fs = require('fs');
 var hotload = require('hotload');
 var bot = hotload('./bot.js');
-
-fs.watch('./bot.js', function(event, filename) {
-  updateBot();
-});
-
-// I don't like this as a way of hotloading,
-// but after the big refactor, the old way
-// broke slightly.
-function updateBot() {
-  console.log('updating bot');
-  clients.forEach(function(client) {
-    client.getText = bot.getText;
-    client.onMessage = bot.onMessage;
-    client.processText = bot.processText;
-    client.addToReportLog = bot.addToReportLog;
-  });
-}
 
 var settings = JSON.parse(fs.readFileSync('settings.json'));
 var clients = [];
 
 settings.clients.forEach(function(client) {
-  var newBot = new bot.Bot(client, settings.admins);
-  clients.push(newBot);
+  var newClient = new irc.Client(client.server, client.user, {
+    userName: 'secret_bot',
+    realName: 'secret_online\'s bot'
+  });
+
+  newClient.addListener('message', bot.onMessage);
+  newClient.addListener('join', bot.onJoin);
+  newClient.addListener('registered', bot.checkUsername);
+  newClient.addListener('notice', bot.tryLogin);
+
+  newClient.clientSettings = client;
+  newClient.clientAdmins = settings.admins;
+
+  clients.push(newClient);
 });
 
 readConsole();
