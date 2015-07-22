@@ -69,6 +69,10 @@ function getText(args, from, to) {
   if (comm === 'faq') {
     returnArray.push('https://www.reddit.com/r/NoMansSkyTheGame/wiki/faq ' + processText(args, from, to));
   } else
+  // NMS FAQ
+  if (comm === 'archive') {
+    returnArray.push('https://www.reddit.com/r/NoMansSkyTheGame/wiki/archive ' + processText(args, from, to));
+  } else
   // Release
   if (comm === 'release') {
     var result = 'Really Soon ™';
@@ -91,6 +95,15 @@ function getText(args, from, to) {
   if (comm === 'countdown') {
     returnArray.push('http://secretonline.github.io/NMS-Countdown');
   } else
+  // Report generator
+  if (comm === 'planetreport') {
+    returnArray.push('http://secretonline.github.io/NMS-Report');
+  } else
+  // Report generator
+  if (comm === 'inception') {
+    returnArray.push('http://inception.davepedu.com/inception.mp3');
+    returnArray.push('warning: noise');
+  } else
   // Release
   if (comm === 'hint') {
     returnArray.push('what. you think i know the answer? ' + processText(args, from, to));
@@ -107,6 +120,14 @@ function getText(args, from, to) {
     for (var j = 0; j < numEmotes; j++)
       returnArray.push(emotes[Object.keys(emotes)[Math.floor(Math.random() * Object.keys(emotes).length)]]);
     returnArray.push('generation complete');
+  } else
+  // A joke, for melanon68
+  if (comm === 'secret_latin') {
+    returnArray.push(getSecretLatin(processText(args, from, to)));
+  } else
+  // A joke, for trkmstrwggy
+  if (comm === 'trk_latin') {
+    returnArray.push(getTrkLatin(processText(args, from, to)));
   } else
   // Get the meme link
   if (comm === 'meme') {
@@ -155,6 +176,20 @@ function isAdmin(name) {
   return ret;
 }
 
+function getSecretLatin(string) {
+  var words = string.split(' ');
+  for (var i = 0; i < words.length; i++) {
+    if (words[i].length > 2)
+      words[i] = words[i].substring(1, 2) + words[i].substring(0, 1) + words[i].substring(2);
+  }
+  return words.join(' ');
+}
+
+function getTrkLatin(string) {
+  var newString = string.replace(/[aeiouc]/gi, '')
+  return newString;
+}
+
 /**
  * Quick title case
  */
@@ -186,9 +221,13 @@ var emotes = {
   'fliptable': '(╯°□°)╯︵ ┻━┻',
   'FLIPTABLE': '(ノಠ益ಠ)ノ彡┻━┻',
   'flipdouble': '┻━┻ ︵ヽ(`Д´)ﾉ︵ ┻━┻',
-  'unfliptable': '┬──┬ ノ( ゜-゜ノ)',
+  'unfliptable': '┬──┬ ノ(゜-゜ノ)',
   'UNFLIPTABLE': '┬──┬ ノ(゜益゜ノ)',
+  'undisapprovetable': '┬──┬ ノ(ಠ_ಠノ)',
   'fliptable?': '┬──┬ ︵ /(.□. \\)',
+  'flipflipper': '(╯°Д°）╯︵ /(.□ . \\)',
+  'disapprovetable': '(╯ಠ_ಠ)╯︵ ┻━┻',
+  'wattable': '(╯ಠ▃ಠ)╯︵ ┻━┻',
   'fu': 'ಠ︵ಠ凸',
   'lenny': '( ͡° ͜ʖ ͡°)',
   'lennymob': '( ͡° ͜ʖ ( ͡° ͜ʖ ( ͡° ͜ʖ ( ͡° ͜ʖ ͡°) ͜ʖ ͡°)ʖ ͡°)ʖ ͡°)',
@@ -292,7 +331,8 @@ var flipTable = {
   'U': '\u2229',
   'V': '\u039B',
   'Y': '\u03BB',
-  '（': '）'
+  '（': '）',
+  '☜': '☞'
 };
 for (var i in flipTable) {
   flipTable[flipTable[i]] = i;
