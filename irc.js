@@ -73,6 +73,19 @@ function tryLogin(nick, to, text, message) {
 function onMessage(nick, to, text, message) {
   if (nick === 'Gunter')
     addToGunterLog(message.args[1]);
+  var bold, italics, underline;
+  if (text.indexOf('\x02') > -1) {
+    text = text.replace(/[\x02]/g, '');
+    bold = true;
+  }
+  if (text.indexOf('\x1D') > -1) {
+    text = text.replace(/[\x1D]/g, '');
+    italics = true;
+  }
+  if (text.indexOf('\x1F') > -1) {
+    text = text.replace(/[\x1F]/g, '');
+    underline = true;
+  }
   // Only operate when ` or ~ is the first character
   if (text.charAt(0) === '`' || text.charAt(0) === '~') {
     // By default, reply to user
