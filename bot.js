@@ -1,20 +1,26 @@
 /**
  * Returns an array of strings to send
  */
-function getText(args, from, to) {
+function getText(args, from, to, admins) {
   // Split into command + arguments for that command
   var comm = args.splice(0, 1)[0].substring(1);
   var returnArray = [];
   // Stop the bot, but only if admin
+  if (comm === '') {
+    // Do nothing!
+  } else
+  // Stop the bot, but only if admin
   if (comm === 'stop') {
-    if (isAdmin(from))
+    if (isAdmin(from, admins))
       this.disconnect('hammer time');
   } else
   // Say, but only if admin
   if (comm === 'say') {
     var rValue = '';
-    if (isAdmin(from))
-      rValue = processText(args, from, to);
+    if (isAdmin(from, admins))
+      rValue = processText(args, from, to, admins);
+    else
+      rValue = 'you don\'t have permission to do that';
     returnArray.push(rValue);
   } else
   // Get help
@@ -22,18 +28,23 @@ function getText(args, from, to) {
     return getHelp(args);
   // Bot source
   else if (comm === 'source') {
-    returnArray.push('https://github.com/SecretOnline/NMS-irc-bot/ ' + processText(args, from, to));
+    returnArray.push('https://github.com/SecretOnline/NMS-irc-bot/ ' + processText(args, from, to, admins));
+  } else
+  // Flip words
+  if (comm === 'oneline') {
+    // Add to return array
+    returnArray.push(processText(args, from, to, admins));
   } else
   // Flip words
   if (comm === 'flip') {
     // Add to return array
-    returnArray.push(flip(processText(args, from, to)));
+    returnArray.push(flip(processText(args, from, to, admins)));
   } else
   // Wikipedia links
   if (comm === 'wiki') {
     var url = 'https://en.wikipedia.org/wiki/';
     if (args.length > 0)
-      url += toTitleCase(processText(args, from, to));
+      url += toTitleCase(processText(args, from, to, admins));
     else
       url += 'Main_Page';
     url = url.replace(/ /g, '_');
@@ -45,7 +56,7 @@ function getText(args, from, to) {
   if (comm === 'google') {
     var url = 'https://www.google.com/';
     if (args.length > 0)
-      url += 'search?q=' + processText(args, from, to);
+      url += 'search?q=' + processText(args, from, to, admins);
     url = url.replace(/ /g, '+');
     url = encodeURI(url);
     url = url.replace(/'/g, '%27');
@@ -55,7 +66,7 @@ function getText(args, from, to) {
   if (comm === 'lmgtfy') {
     var url = 'http://lmgtfy.com/';
     if (args.length > 0)
-      url += '?q=' + processText(args, from, to);
+      url += '?q=' + processText(args, from, to, admins);
     url = url.replace(/ /g, '+');
     url = encodeURI(url);
     url = url.replace(/'/g, '%27');
@@ -63,23 +74,32 @@ function getText(args, from, to) {
   } else
   // Kickstart trivia
   if (comm === 'ks') {
-    returnArray.push('.trivia kickstart ' + processText(args, from, to));
+    returnArray.push('.trivia kickstart');
   } else
   // NMS FAQ
   if (comm === 'faq') {
-    returnArray.push('https://www.reddit.com/r/NoMansSkyTheGame/wiki/faq ' + processText(args, from, to));
+    returnArray.push('https://www.reddit.com/r/NoMansSkyTheGame/wiki/faq ' + processText(args, from, to, admins));
   } else
   // NMS FAQ
   if (comm === 'archive') {
-    returnArray.push('https://www.reddit.com/r/NoMansSkyTheGame/wiki/archive ' + processText(args, from, to));
+    returnArray.push('https://www.reddit.com/r/NoMansSkyTheGame/wiki/archive ' + processText(args, from, to, admins));
+  } else
+  // NMS rules
+  if (comm === 'rules') {
+    returnArray.push('https://www.reddit.com/r/NoMansSkyTheGame/wiki/rules ' + processText(args, from, to, admins));
+  } else
+  // Bot accusation
+  if (comm === 'bot') {
+    returnArray.push('no, you\'re a bot, ' + processText(args, from, to, admins));
+    //returnArray.push('no, you\'re a bot, undefined');
   } else
   // Release
   if (comm === 'release') {
-    var result = 'Really Soon ™';
+    var result = 'Not-Quite-So Soon ™';
     var showCountdown = true;
 
     if (args.length) {
-      returnArray.push('Estimated release of ' + processText(args, from, to) + ':');
+      returnArray.push('Estimated release of ' + processText(args, from, to, admins) + ':');
       args.forEach(function(arg) {
         if (emotes[arg.substring(1)])
           result = 'Right Now ™';
@@ -88,8 +108,8 @@ function getText(args, from, to) {
     } else
       returnArray.push('Estimated release of No Man\'s Sky: ');
     returnArray.push(result);
-    if (showCountdown)
-      returnArray.push('(when we have a date, go to ~countdown for a, well, countdown)');
+    // if (showCountdown)
+    //   returnArray.push('(when we have a date, go to ~countdown for a, well, countdown)');
   } else
   // Release
   if (comm === 'countdown') {
@@ -104,14 +124,18 @@ function getText(args, from, to) {
     returnArray.push('http://inception.davepedu.com/inception.mp3');
     returnArray.push('warning: noise');
   } else
+  // Sean's mindblow
+  if (comm === 'mindblow') {
+    returnArray.push('http://i.imgur.com/8pTSVjV.gif');
+  } else
   // Release
   if (comm === 'hint') {
-    returnArray.push('what. you think i know the answer? ' + processText(args, from, to));
+    returnArray.push('what. you think i know the answer? ' + processText(args, from, to, admins));
   } else
   // REPORT
   if (comm === 'report') {
-    addToReportLog([processText(args, from, to)], from);
-    returnArray.push('your error has been logged. Thanks ' + from, to);
+    addToReportLog([processText(args, from, to, admins)], from);
+    returnArray.push('your error has been logged. Thanks ' + from);
   } else
   // A joke, for devinup
   if (comm === 'generate') {
@@ -123,11 +147,72 @@ function getText(args, from, to) {
   } else
   // A joke, for melanon68
   if (comm === 'secret_latin') {
-    returnArray.push(getSecretLatin(processText(args, from, to)));
+    returnArray.push(getSecretLatin(processText(args, from, to, admins)));
   } else
   // A joke, for trkmstrwggy
   if (comm === 'trk_latin') {
-    returnArray.push(getTrkLatin(processText(args, from, to)));
+    returnArray.push(getTrkLatin(processText(args, from, to, admins)));
+  } else
+  // A joke, for a certain Mr. Smith
+  if (comm === 'jaden_latin') {
+    returnArray.push(toTitleCase(processText(args, from, to, admins)));
+  } else
+  // A joke, for a Hipo and I
+  if (comm === 'ohdear_latin') {
+    returnArray.push(getSecretLatin(getTrkLatin(toTitleCase(processText(args, from, to, admins)))));
+  } else
+  // A joke, for trk and I
+  if (comm === 'ohfuck_latin') {
+    returnArray.push(flip(getSecretLatin(getTrkLatin(toTitleCase(processText(args, from, to, admins))))));
+  } else
+  // A joke, for a Hipo and I
+  if (comm === 'cut') {
+    returnArray.push('hey, that\'s not nice.');
+  } else
+  // A joke, for a Hipo and I
+  if (comm === 'rip') {
+    returnArray.push('rip in peace, ' + processText(args, from, to, admins));
+  } else
+  // A joke, for trk and I
+  if (comm === 'thanks') {
+    if (from === 'secret_online')
+      returnArray.push('yeah, yeah. you created me.');
+    else
+      returnArray.push('you\'re welcome.');
+  } else
+  // A joke, for trkmstrwggy
+  if (comm === 'prayer') {
+    returnArray.push('Our Murray who art in Guildford,');
+    returnArray.push('procedural be thy name.');
+    returnArray.push('Thy universe come, thy game be done,');
+    returnArray.push('on Planet E3 as in Ethaedair.');
+    returnArray.push('Give us this day our IGN First,');
+    returnArray.push('and forgive our questions,');
+    returnArray.push('as we forgive those who don\'t read the FAQ.');
+    returnArray.push('Lead us not into release hype,');
+    returnArray.push('but deliver us the game.');
+    returnArray.push('For thine is Hello Games, the proc-gen, and the awards.');
+    returnArray.push('A-space-goat.');
+  } else
+  // A joke, for a Hipo and I
+  if (comm === 'BANHAMMER') {
+    if (args.length) {
+      returnArray.push('BANNING ' + processText(args, from, to, admins));
+    } else
+      returnArray.push('so, uh... you going to specify who to let the banhammer loose on?');
+  } else
+  // What did you just say to me?
+  if (comm === 'respawn') {
+    var resIndex = Math.floor(Math.random() * Object.keys(respawns).length);
+    returnArray.push("\"" + respawns[resIndex].text + "\"");
+    returnArray.push("- " + respawns[resIndex].src);
+  } else
+  // What did you just say to me?
+  if (comm === 'copypasta') {
+    //if (isAdmin(from, admins))
+    returnArray.push(copyPasta + processText(args, from, to, admins));
+    //else
+    //  returnArray.push(processText(args, from, to, admins));
   } else
   // Get the meme link
   if (comm === 'meme') {
@@ -137,13 +222,13 @@ function getText(args, from, to) {
   } else
   // Emotes
   if (emotes[comm]) {
-    returnArray.push(getEmote(comm) + ' ' + processText(args, from, to));
+    returnArray.push(getEmote(comm) + ' ' + processText(args, from, to, admins));
   } else
     return ['invalid command: \'' + comm + '\'. please try again'];
   return returnArray;
 }
 
-function processText(words, from, to) {
+function processText(words, from, to, admins) {
   var str = '';
 
   for (var i = 0; i < words.length; i++) {
@@ -155,7 +240,7 @@ function processText(words, from, to) {
       // Split into new arguments
       var newArgs = words.splice(i);
       // Get the result, and add it on
-      var newString = getText(newArgs, from, to).join(' ');
+      var newString = getText(newArgs, from, to, admins).join(' ');
       str += newString;
       break;
     } else
@@ -166,9 +251,9 @@ function processText(words, from, to) {
   return str;
 }
 
-function isAdmin(name) {
+function isAdmin(name, admins) {
   var ret = false;
-  this.clientAdmins.forEach(function(admin) {
+  admins.forEach(function(admin) {
     if (name === admin) {
       ret = true;
     }
@@ -186,7 +271,7 @@ function getSecretLatin(string) {
 }
 
 function getTrkLatin(string) {
-  var newString = string.replace(/[aeiouc]/gi, '')
+  var newString = string.replace(/[aeiouc]/gi, '');
   return newString;
 }
 
@@ -208,6 +293,7 @@ function getEmote(key) {
 var emotes = {
   'ayy': '☜(ﾟヮﾟ☜)',
   'converge': '(つ°ヮ°)つ',
+  'coffee': '☕',
   'dance': '〜(^∇^〜）（〜^∇^)〜',
   'deal': '( •_•) ( •_•)>⌐■-■ (⌐■_■)',
   'DEAL': '( ಠ益ಠ) ( ಠ益ಠ)>⌐■-■ (⌐■益■)',
@@ -218,6 +304,7 @@ var emotes = {
   'dongers': 'ヽ༼ຈل͜ຈ༽ﾉ',
   'dongers?': '┌༼◉ل͟◉༽┐',
   'dongersmob': 'ヽ༼ຈل͜ຈヽ༼ຈل͜ຈヽ༼ຈل͜ຈヽ༼ຈل͜ຈ༽ﾉل͜ຈ༽ﾉل͜ຈ༽ﾉل͜ຈ༽ﾉ',
+  'dongerswall': '┬┴┬┴┤ヽ༼ຈل͜├┬┴┬┴',
   'fliptable': '(╯°□°)╯︵ ┻━┻',
   'FLIPTABLE': '(ノಠ益ಠ)ノ彡┻━┻',
   'flipdouble': '┻━┻ ︵ヽ(`Д´)ﾉ︵ ┻━┻',
@@ -227,6 +314,8 @@ var emotes = {
   'fliptable?': '┬──┬ ︵ /(.□. \\)',
   'flipflipper': '(╯°Д°）╯︵ /(.□ . \\)',
   'disapprovetable': '(╯ಠ_ಠ)╯︵ ┻━┻',
+  'dongerstable': '༼ﾉຈل͜ຈ༽ﾉ︵ ┻━┻',
+  'lennytable': '(╯ ͡° ͜ʖ ͡°)╯︵ ┻━┻',
   'wattable': '(╯ಠ▃ಠ)╯︵ ┻━┻',
   'fu': 'ಠ︵ಠ凸',
   'lenny': '( ͡° ͜ʖ ͡°)',
@@ -235,7 +324,6 @@ var emotes = {
   'lennywall': '┬┴┬┴┤( ͡° ͜ʖ├┬┴┬┴',
   'lennywink': '( ͡~ ͜ʖ ͡°)',
   'lenny?': '( ͠° ͟ʖ ͡°)',
-  'mindblow': 'http://i.imgur.com/8pTSVjV.gif',
   'orly': '﴾͡๏̯͡๏﴿ O\'RLY?',
   'rage': 'ლ(ಠ益ಠლ)',
   'robot': '╘[◉﹃◉]╕',
@@ -248,6 +336,11 @@ var emotes = {
   'whattheshrug': '﻿¯\\(ºдಠ)/¯',
   'zoidberg': '(\\/) (°,,°) (\\/)'
 };
+
+var respawns = [{
+  text: 'There is a fullness and a calmness there which can only come from knowing pain.',
+  src: 'Dan Simmons, Hyperion'
+}];
 
 /**
  * May-mays
@@ -385,6 +478,7 @@ var mainHelp = [
   ],
   [
     'page 2 of 2',
+    'countdown: ',
     '[emote name]: show unicode emote. \'help emotes\' to see a list',
     'faq: link to the /r/NoMansSkyTheGame faq',
     'flip [text to flip]: flip it and reverse it.',
@@ -392,6 +486,7 @@ var mainHelp = [
     'wiki [page]: link to a page of wikipedia',
     'meme [meme name]: link to a meme. \'help memes\' to see a list',
     'report [description of error]: write an error report',
+    'respawn: give one of the known respawn texts from the game',
     'say [text to say]: make secret_bot say some text',
     'source: link to the source code of the bot'
   ]
@@ -419,6 +514,8 @@ var wikiHelp = [
     '~wiki ~lenny'
   ]
 ];
+
+var copyPasta = "What did you just say about me? I\'ll have you know I graduated top of my class in the NoManNauts, and I\'ve been involved in numerous secret raids on Hello Games, and I have over 300 confirmed planet sightings. I am trained in space-goat warfare and I\'m the top pilot in the entirety /r/NoMansSkyTheGame. You are nothing to me but just another goat. I will wipe you out with proc-gen tech the likes of which has never been seen before in this system, mark my words. You think you can get away with saying that to me over IRC? Think again. As we speak I am contacting my secret network of sentinels across the galaxy and your ship is being traced right now so you better prepare for the storm. The storm that wipes out the pathetic little thing you call Ictaloris Hyphus. You\'re dead, kid. I can warp anywhere, anytime, and I can kill you in over 18 quintillion ways, and thats just with my multitool. Not only am I extensively trained in multitool combat, but I have access to the entire arsenal of the Malevolent Force and I will use it to its full extent to wipe your E3 Fish off the face of the universe. If only you could have known what unholy retribution your little clever comment was about to bring down upon you, maybe you would have held your tongue. But you couldn\'t, you didn\'t, and now you\'re paying the price. I will fire plasma grenades all over you and you will explode in it. You\'re dead, space-goat.";
 
 module.exports = {
   getText: getText,

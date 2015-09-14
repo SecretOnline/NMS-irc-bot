@@ -14,8 +14,9 @@ settings.clients.forEach(function(client) {
 
   newClient.addListener('message', onMessage);
   newClient.addListener('join', onJoin);
-  newClient.addListener('registered', checkUsername);
   newClient.addListener('notice', tryLogin);
+  if (client.pass)
+    newClient.addListener('registered', checkUsername);
 
   newClient.clientSettings = client;
   newClient.clientAdmins = settings.admins;
@@ -24,6 +25,12 @@ settings.clients.forEach(function(client) {
 });
 
 readConsole();
+
+process.on('beforeExit', function() {
+  clients.forEach(function(aBot) {
+    aBot.disconnect('well, we\'re OUT of cake');
+  });
+});
 
 /**
  * Perform a check to see if the username is already taken
@@ -43,7 +50,7 @@ function checkUsername(message) {
  */
 function tryLogin(nick, to, text, message) {
   try {
-    console.log(message.args.join(' '));
+    botLog(nick + ' ' + message.args.join(' '));
     // Log in once NickSev sends the right messages
     if (nick === 'NickServ' && message.args.join(' ').match(/This nickname is registered and protected\./)) {
       this.say('nickserv', 'identify ' + this.clientSettings.pass);
@@ -56,7 +63,7 @@ function tryLogin(nick, to, text, message) {
       this.removeListener('notice', tryLogin);
     }
   } catch (err) {
-    console.log(err);
+    botLog(err);
   }
 }
 
@@ -81,7 +88,7 @@ function onMessage(nick, to, text, message) {
       replyTo = nick;
     // Get text to send
     try {
-      replyArray = bot.getText(argArray, nick, replyTo);
+      replyArray = bot.getText(argArray, nick, replyTo, settings.admins);
     } catch (err) {
       replyArray = [err, 'this error has been logged'];
       replyTo = nick;
@@ -89,11 +96,18 @@ function onMessage(nick, to, text, message) {
     }
     // Send array one item at a time
     replyArray.forEach(function(reply) {
+      botLog(reply);
+      if (bold)
+        reply = '\x02' + reply;
+      if (italics)
+        reply = '\x1D' + reply;
+      if (underline)
+        reply = '\x1F' + reply;
       this.say(replyTo, reply);
     }, this);
   }
   // Log all input for debugging purposes
-  console.log(nick + ': ' + text);
+  botLog(nick + ': ' + text);
 }
 
 /**
@@ -110,7 +124,7 @@ function onJoin(channel, nick, message) {
       this.say(channel, reply);
     }, this);
 
-  console.log(nick + ' joined ' + channel);
+  botLog(nick + ' joined ' + channel);
 }
 
 /**
@@ -137,6 +151,25 @@ function addToReportLog(messageArray, from, isCrash) {
   fs.writeFileSync('reports.json', JSON.stringify(reports, null, 2));
 }
 
+/**
+ * Add message array to log
+ */
+function addToGunterLog(message) {
+  var fs = require('fs');
+  var reports;
+  try {
+    reports = JSON.parse(fs.readFileSync('gunter.json'));
+  } catch (err) {
+    reports = [];
+  }
+  reports.push(message);
+  fs.writeFileSync('gunter.json', JSON.stringify(reports, null, 2));
+}
+
+function botLog(text) {
+  console.log(new Date(Date.now()).toLocaleTimeString() + ': ' + text);
+}
+
 function readConsole() {
   var readline = require('readline');
   var rl = readline.createInterface(process.stdin, process.stdout);
@@ -151,7 +184,7 @@ function readConsole() {
       );
     else if (line.match(/(^x$|^exit$)/)) {
       clients.forEach(function(aBot) {
-        aBot.disconnect('stop; hammer time');
+        aBot.disconnect('well, we\'re OUT of cake');
       });
       rl.close();
     } else

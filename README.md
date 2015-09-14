@@ -7,7 +7,7 @@ Uses the following Node.js modules:
 `irc` for irc connection  
 `hotload` for auto-loading changes without having to restart the bot
 
-Type `npm install irc hotload` into a console window to install them.  
+Run `npm install`  to install them.  
 Once that's done, you're ready to go.
 
 It may be useful to make a batch/bash script to easily start the bot.
@@ -20,7 +20,7 @@ I wouldn't want to give my password away, would I.
 
 `reports.json`
 
-Crash (and user) reports go here. 
+Crash (and user) reports go here.
 
 ##settings.json
 
