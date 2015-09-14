@@ -71,6 +71,8 @@ function tryLogin(nick, to, text, message) {
  * To do when bot recieves a message
  */
 function onMessage(nick, to, text, message) {
+  if (nick === 'Gunter')
+    addToGunterLog(message.args[1]);
   // Only operate when ` or ~ is the first character
   if (text.charAt(0) === '`' || text.charAt(0) === '~') {
     // By default, reply to user
