@@ -146,6 +146,10 @@ function getText(args, from, to, admins) {
       returnArray.push(emotes[Object.keys(emotes)[Math.floor(Math.random() * Object.keys(emotes).length)]]);
     returnArray.push('generation complete');
   } else
+  // A joke, for irc
+  if (comm === 'procedural') {
+    returnArray.push('Every ' + procedural[Math.floor(Math.random() * procedural.length)] + " procedural");
+  } else
   // A joke, for melanon68
   if (comm === 'secret_latin') {
     returnArray.push(getSecretLatin(processText(args, from, to, admins)));
@@ -342,6 +346,51 @@ var respawns = [{
   text: 'There is a fullness and a calmness there which can only come from knowing pain.',
   src: 'Dan Simmons, Hyperion'
 }];
+
+var procedural = [
+  'planet',
+  'star',
+  'solar system',
+  'galaxy',
+  'voxel',
+  'animal',
+  'plant',
+  'bush',
+  'tree',
+  'ship',
+  'mountain',
+  'hill',
+  'cave',
+  'river',
+  'ocean',
+  'mountain',
+  'weapon',
+  'comment',
+  'procedure',
+  'release date',
+  'tweet',
+  'post',
+  'article',
+  'wallpaper',
+  'fan art',
+  '"Every x procedural"',
+  'atom',
+  'planet name convention',
+  'theory',
+  'extension',
+  'space whale',
+  'photoshop of Sean\'s face',
+  'interview',
+  'meme',
+  'spoiler',
+  'post flair',
+  'comment generator',
+  'Spotify playlist',
+  'space goat',
+  'subscriber',
+  'IGN video',
+  'dream'
+];
 
 /**
  * May-mays
