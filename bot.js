@@ -98,16 +98,17 @@ function getText(args, from, to, admins) {
     var result = 'Not-Quite-So Soon ™';
     var showCountdown = true;
 
-    if (args.length) {
-      returnArray.push('Estimated release of ' + processText(args, from, to, admins) + ':');
-      args.forEach(function(arg) {
-        if (emotes[arg.substring(1)])
-          result = 'Right Now ™';
-      });
-      showCountdown = false;
-    } else
-      returnArray.push('Estimated release of No Man\'s Sky: ');
+    // if (args.length) {
+    //   returnArray.push('Estimated release of ' + processText(args, from, to, admins) + ':');
+    //   args.forEach(function(arg) {
+    //     if (emotes[arg.substring(1)])
+    //       result = 'Right Now ™';
+    //   });
+    //   showCountdown = false;
+    // } else
+    returnArray.push('Estimated release of No Man\'s Sky: ');
     returnArray.push(result);
+    returnArray.push('Hey, isn\'t that around the time you\'re going to update the bot, secret?');
     // if (showCountdown)
     //   returnArray.push('(when we have a date, go to ~countdown for a, well, countdown)');
   } else
