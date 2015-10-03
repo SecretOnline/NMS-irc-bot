@@ -95,20 +95,13 @@ function getText(args, from, to, admins) {
   } else
   // Release
   if (comm === 'release') {
-    var result = 'Not-Quite-So Soon ™';
-    var showCountdown = true;
+    var result = 'It\'s a secret™';
 
-    // if (args.length) {
-    //   returnArray.push('Estimated release of ' + processText(args, from, to, admins) + ':');
-    //   args.forEach(function(arg) {
-    //     if (emotes[arg.substring(1)])
-    //       result = 'Right Now ™';
-    //   });
-    //   showCountdown = false;
-    // } else
-    returnArray.push('Estimated release of No Man\'s Sky: ');
+    if (args.length) {
+      returnArray.push('Estimated release of ' + processText(args, from, to, admins) + ':');
+    } else
+      returnArray.push('Estimated release of No Man\'s Sky: ');
     returnArray.push(result);
-    returnArray.push('Hey, isn\'t that around the time you\'re going to update the bot, secret?');
     // if (showCountdown)
     //   returnArray.push('(when we have a date, go to ~countdown for a, well, countdown)');
   } else
@@ -133,6 +126,16 @@ function getText(args, from, to, admins) {
   if (comm === 'hint') {
     returnArray.push('what. you think i know the answer? ' + processText(args, from, to, admins));
   } else
+  // CHOO CHOO
+  if (comm === 'hype') {
+    returnArray.push('choo choo');
+  } else
+  if (comm === 'HYPE') {
+    returnArray.push('CHOO CHOO! ALL ABOARD');
+  } else
+  if (comm === 'HYPETRAIN') {
+    returnArray.push('/|˳˳_˳˳|[˳˳H˳˳]¬˳˳Y˳˳⌐(˳˳P˳˳)\\˳˳E˳˳/|˳˳!˳˳|');
+  } else
   // REPORT
   if (comm === 'report') {
     addToReportLog([processText(args, from, to, admins)], from);
@@ -148,7 +151,17 @@ function getText(args, from, to, admins) {
   } else
   // A joke, for irc
   if (comm === 'procedural') {
-    returnArray.push('Every ' + procedural[Math.floor(Math.random() * procedural.length)] + " procedural");
+    var index = Math.floor(Math.random() * procedural.length);
+    var text;
+
+    if (args.length) {
+      text = processText(args, from, to, admins);
+    }
+
+    if (!text)
+      text = procedural[index];
+
+    returnArray.push('Every ' + text + ' procedural');
   } else
   // A joke, for melanon68
   if (comm === 'secret_latin') {
@@ -177,6 +190,10 @@ function getText(args, from, to, admins) {
   // A joke, for a Hipo and I
   if (comm === 'rip') {
     returnArray.push('rip in peace, ' + processText(args, from, to, admins));
+  } else
+  // A joke, for a Hipo and I
+  if (comm === 'soon') {
+    returnArray.push('not soon enough :(');
   } else
   // A joke, for trk and I
   if (comm === 'thanks') {
@@ -389,6 +406,7 @@ var procedural = [
   'space goat',
   'subscriber',
   'IGN video',
+  'photoshopped Steam page',
   'dream'
 ];
 
