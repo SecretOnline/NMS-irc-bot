@@ -15,13 +15,8 @@ function getText(args, from, to, admins) {
       this.disconnect('hammer time');
   } else
   // Say, but only if admin
-  if (comm === 'say') {
-    var rValue = '';
-    if (isAdmin(from, admins))
-      rValue = processText(args, from, to, admins);
-    else
-      rValue = 'you don\'t have permission to do that';
-    returnArray.push(rValue);
+  if (comm === 'raw') {
+    returnArray.push(args.join(' '));
   } else
   // Get help
   if (comm === 'help')
@@ -128,13 +123,13 @@ function getText(args, from, to, admins) {
   } else
   // CHOO CHOO
   if (comm === 'hype') {
-    returnArray.push('choo choo');
+    returnArray.push('choo choo ' + processText(args, from, to, admins));
   } else
   if (comm === 'HYPE') {
-    returnArray.push('CHOO CHOO! ALL ABOARD');
+    returnArray.push('CHOO CHOO! ALL ABOARD ' + processText(args, from, to, admins));
   } else
   if (comm === 'HYPETRAIN') {
-    returnArray.push('/|˳˳_˳˳|[˳˳H˳˳]¬˳˳Y˳˳⌐(˳˳P˳˳)\\˳˳E˳˳/|˳˳!˳˳|');
+    returnArray.push('/|˳˳_˳˳|[˳˳H˳˳]¬˳˳Y˳˳⌐(˳˳P˳˳)\\˳˳E˳˳/|˳˳!˳˳| ' + processText(args, from, to, admins));
   } else
   // REPORT
   if (comm === 'report') {
