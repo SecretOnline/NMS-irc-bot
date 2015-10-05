@@ -71,6 +71,9 @@ function tryLogin(nick, to, text, message) {
  * To do when bot recieves a message
  */
 function onMessage(nick, to, text, message) {
+  // Log all input for debugging purposes
+  botLog(nick + ': ' + text);
+
   if (nick === 'secret_bot')
     return;
   if (nick === 'Gunter')
@@ -123,26 +126,14 @@ function onMessage(nick, to, text, message) {
       this.say(replyTo, reply);
     }, this);
   }
-  // Log all input for debugging purposes
-  botLog(nick + ': ' + text);
 }
 
 /**
  * To do when bot recieves a message
  */
 function onJoin(channel, nick, message) {
-  var replyArray;
-  if (nick === 'Trentosaurus') {
-    replyArray = ['Trent\'s here!', 'raise your ' + bot.emotes['dongers']];
-  } else if (nick === 'Hipolipolopigus') {
-    replyArray = ['Hipo!  o/'];
-  } else if (nick === 'secret_online') {
-    replyArray = ['oh, hello owner'];
-  } else if (nick === 'Gunter') {
-    replyArray = ['hi gunter'];
-  }
-
-  if (replyArray)
+  var replyArray = bot.getWelcome(nick);
+  if (replyArray.length)
     replyArray.forEach(function(reply) {
       this.say(channel, reply);
     }, this);

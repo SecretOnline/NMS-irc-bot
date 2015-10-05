@@ -264,6 +264,30 @@ function getText(args, from, to, admins) {
   return returnArray;
 }
 
+function getWelcome(nick) {
+  var replyArray = [];
+  if (nick === 'Trentosaurus') {
+    replyArray.push('Trent\'s here!', 'raise your ' + bot.emotes.dongers);
+  } else if (nick === 'Hipolipolopigus') {
+    replyArray.push('a wild hipolipolopigus appeared o/');
+  } else if (nick === 'secret_online') {
+    replyArray.push('oh, hello owner');
+  } else if (nick === 'Gunter') {
+    replyArray.push('hi gunter');
+  } else if (nick === 'Doctor_Colossus') {
+    replyArray.push('what\'s up, doc?');
+  } else if (nick === 'Alvv') {
+    replyArray.push('it\'s alvv! put your hands up \\o/');
+  } else if (nick === 'trkmstrwggy' || nick === 'trkmstrwggy_mbl') {
+    replyArray.push('and here we see the wild trk in its native habitat');
+  } else if (nick === 'Toofifty') {
+    replyArray.push('too, atlas is broke again... :P');
+  } else if (nick === 'Snappin') {
+    replyArray.push('hi snappin, \'~hype train\'');
+  }
+  return replyArray;
+}
+
 function processText(words, from, to, admins) {
   var str = '';
 
@@ -605,6 +629,7 @@ var copyPasta = "What did you just say about me? I\'ll have you know I graduated
 
 module.exports = {
   getText: getText,
+  getWelcome: getWelcome,
   getHelp: getHelp,
   processText: processText,
   emotes: emotes
