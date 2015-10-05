@@ -14,16 +14,31 @@ function getText(args, from, to, admins) {
     if (isAdmin(from, admins))
       this.disconnect('hammer time');
   } else
+  // Run a command, but only if admin
+  if (comm === 'eval') {
+    if (isAdmin(from, admins)) {
+      returnArray.push(eval(processText(args, from, to, admins)).toString());
+    } else {
+      returnArray.push('due to the nature of this command, you are not able to use it.');
+    }
+  } else
   // Say, but only if admin
   if (comm === 'raw') {
     returnArray.push(args.join(' '));
+  } else
+  // Say, but only if admin
+  if (comm === 'say') {
+    returnArray.push(processText(args, from, to, admins));
   } else
   // Get help
   if (comm === 'help')
     return getHelp(args);
   // Bot source
   else if (comm === 'source') {
-    returnArray.push('https://github.com/SecretOnline/NMS-irc-bot/ ' + processText(args, from, to, admins));
+    if (args.length)
+      returnArray.push('https://github.com/SecretOnline/NMS-irc-bot/blob/master/' + processText(args, from, to, admins));
+    else
+      returnArray.push('https://github.com/SecretOnline/NMS-irc-bot/ ' + processText(args, from, to, admins));
   } else
   // Flip words
   if (comm === 'oneline') {
@@ -189,6 +204,10 @@ function getText(args, from, to, admins) {
   // A joke, for a Hipo and I
   if (comm === 'soon') {
     returnArray.push('not soon enough :(');
+  } else
+  // A joke, for Snappin
+  if (comm === 'hundreds') {
+    returnArray.push('hundreds, if not thousands, of ' + processText(args, from, to, admins));
   } else
   // A joke, for trk and I
   if (comm === 'thanks') {
@@ -357,6 +376,9 @@ var emotes = {
 var respawns = [{
   text: 'There is a fullness and a calmness there which can only come from knowing pain.',
   src: 'Dan Simmons, Hyperion'
+}, {
+  text: 'choo choo choo choo train',
+  src: 'lenny'
 }];
 
 var procedural = [
@@ -418,7 +440,8 @@ var memes = {
   'picard': 'http://i.imgur.com/CXra35Y.jpg',
   'doublepicard': 'http://i.imgur.com/vzyuVHI.png',
   'picardwhy': 'http://i.imgur.com/v4Ewvxz.png',
-  'joker': 'http://i.imgur.com/sLJSLnF.png'
+  'joker': 'http://i.imgur.com/sLJSLnF.png',
+  'itshappening': 'http://i.imgur.com/7drHiqr.gif'
 };
 
 /**
