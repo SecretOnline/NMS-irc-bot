@@ -32,8 +32,8 @@ process.on('beforeExit', function() {
 function checkUsername(message) {
   // If the username has been taken, and a new one (with a number on the end) has been assigned
   // try to Ghost the other user
-  if (this.nick.match(new RegExp(settings.client.user + '[0-9]+'))) {
-    this.say('nickserv', 'ghost ' + settings.client.user + ' ' + settings.client.pass);
+  if (client.nick.match(new RegExp(settings.client.user + '[0-9]+'))) {
+    client.say('nickserv', 'ghost ' + settings.client.user + ' ' + settings.client.pass);
   }
 }
 
@@ -46,14 +46,14 @@ function tryLogin(nick, to, text, message) {
     botLog(nick + ' ' + message.args.join(' '));
     // Log in once NickSev sends the right messages
     if (nick === 'NickServ' && message.args.join(' ').match(/This nickname is registered and protected\./)) {
-      this.say('nickserv', 'identify ' + settings.client.pass);
+      client.say('nickserv', 'identify ' + settings.client.pass);
     } else
     // When logged in, join the channels
     if (nick === 'NickServ' && message.args.join(' ').match(/Password accepted/)) {
       settings.client.channels.forEach(function(channel) {
-        this.join(channel);
-      }, this);
-      this.removeListener('notice', tryLogin);
+        client.join(channel);
+      });
+      client.removeListener('notice', tryLogin);
     }
   } catch (err) {
     botLog(err);
@@ -71,18 +71,18 @@ function onMessage(nick, to, text, message) {
     return;
   if (nick === 'Gunter')
     addToGunterLog(message.args[1]);
-  var bold, italics, underline;
+  var settings = {};
   if (text.indexOf('\x02') > -1) {
     text = text.replace(/[\x02]/g, '');
-    bold = true;
+    settings.bold = true;
   }
   if (text.indexOf('\x1D') > -1) {
     text = text.replace(/[\x1D]/g, '');
-    italics = true;
+    settings.italics = true;
   }
   if (text.indexOf('\x1F') > -1) {
     text = text.replace(/[\x1F]/g, '');
-    underline = true;
+    settings.underline = true;
   }
   // Only operate when ` or ~ is the first character
   if (text.charAt(0) === '`' || text.charAt(0) === '~') {
@@ -94,31 +94,39 @@ function onMessage(nick, to, text, message) {
     // Split into command + array of arguments
     var argArray = text.split(' ');
     var comm = argArray[0].substring(1);
-    // Array of strings to send
-    var replyArray = [];
     // Send all help back to the user, not channel
     if (comm === 'help' || comm === 'report')
       replyTo = nick;
     // Get text to send
     try {
-      replyArray = bot.getText(argArray, nick, replyTo, settings.admins);
+      bot.getText(argArray, {
+        from: nick,
+        to: replyTo,
+        callback: sendArray,
+        sendSettings: settings
+      });
     } catch (err) {
-      replyArray = [err, 'this error has been logged'];
-      replyTo = nick;
+      var replyArray = [err, 'this error has been logged'];
       addToReportLog([err.message, message.args.splice(1).join(' ')], nick, true);
+      sendArray(replyArray, nick, settings);
     }
-    // Send array one item at a time
-    replyArray.forEach(function(reply) {
-      botLog(reply);
-      if (bold)
-        reply = '\x02' + reply;
-      if (italics)
-        reply = '\x1D' + reply;
-      if (underline)
-        reply = '\x1F' + reply;
-      this.say(replyTo, reply);
-    }, this);
   }
+}
+
+function sendArray(arr, replyTo, settings) {
+  // Send array one item at a time
+  arr.forEach(function(reply) {
+    botLog(reply);
+    if (settings) {
+      if (settings.bold)
+        reply = '\x02' + reply;
+      if (settings.italics)
+        reply = '\x1D' + reply;
+      if (settings.underline)
+        reply = '\x1F' + reply;
+    }
+    client.say(replyTo, reply);
+  });
 }
 
 /**
@@ -128,8 +136,8 @@ function onJoin(channel, nick, message) {
   var replyArray = bot.getWelcome(nick);
   if (replyArray.length)
     replyArray.forEach(function(reply) {
-      this.say(channel, reply);
-    }, this);
+      client.say(channel, reply);
+    });
 
   botLog(nick + ' joined ' + channel);
 }
@@ -177,11 +185,24 @@ function botLog(text) {
   console.log(new Date(Date.now()).toLocaleTimeString() + ': ' + text);
 }
 
+function isAdmin(nick) {
+  var ret = false;
+  settings.admins.forEach(function(admin) {
+    if (name === admin) {
+      ret = true;
+    }
+  });
+  return ret;
+}
+
 function reloadBot() {
   try {
     bot = reload('./bot.js');
     bot.addToReportLog = addToReportLog;
     bot.reloadBot = reloadBot;
+    bot.cb = cb;
+    bot.sendArray = sendArray;
+    bot.isAdmin = isAdmin;
   } catch (e) {
     addToReportLog(['failed to reload'], 'bot', false)
   }
