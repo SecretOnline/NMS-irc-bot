@@ -249,6 +249,10 @@ function getText(args, from, to, admins) {
     if (!returnArray.length)
       returnArray.push('nothing for you yet. you should probably yell at secret for that');
   } else
+  // Greetings
+  if (comm === 'groot') {
+    returnArray.push('http://i.imgur.com/bAhbxaX.gif');
+  } else
   // What did you just say to me?
   if (comm === 'copypasta') {
     returnArray.push(copyPasta + processText(args, from, to, admins));
