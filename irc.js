@@ -134,6 +134,8 @@ function onJoin(channel, nick, message) {
   var replyArray;
   if (nick === 'Trentosaurus') {
     replyArray = ['Trent\'s here!', 'raise your ' + bot.emotes['dongers']];
+  } else if (nick === 'Hipolipolopigus') {
+    replyArray = ['Hipo!  o/'];
   }
 
   if (replyArray)
