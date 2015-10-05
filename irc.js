@@ -1,7 +1,8 @@
 var irc = require('irc');
 var fs = require('fs');
-var hotload = require('hotload');
-var bot = hotload('./bot.js');
+var reload = require('require-reload')(require);
+var bot;
+reloadBot();
 
 var settings = JSON.parse(fs.readFileSync('settings.json'));
 var clients = [];
@@ -182,6 +183,16 @@ function addToGunterLog(message) {
 
 function botLog(text) {
   console.log(new Date(Date.now()).toLocaleTimeString() + ': ' + text);
+}
+
+function reloadBot() {
+  try {
+    bot = reload('./bot.js');
+    bot.addToReportLog = addToReportLog;
+    bot.reloadBot = reloadBot;
+  } catch (e) {
+    addToReportLog(['failed to reload'], 'bot', false)
+  }
 }
 
 function readConsole() {

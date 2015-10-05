@@ -10,9 +10,9 @@ function getText(args, from, to, admins) {
     // Do nothing!
   } else
   // Stop the bot, but only if admin
-  if (comm === 'stop') {
+  if (comm === 'reload') {
     if (isAdmin(from, admins))
-      this.disconnect('hammer time');
+      this.reloadBot();
   } else
   // Run a command, but only if admin
   if (comm === 'eval') {
