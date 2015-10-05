@@ -12,6 +12,7 @@
   },
   "homepage": "https://github.com/SecretOnline/NMS-irc-bot#readme",
   "dependencies": {
+    "cleverbot.io": "^1.0.4",
     "hotload": "0.0.5",
     "irc": "^0.3.12",
     "require-reload": "^0.2.2"

@@ -251,7 +251,7 @@ function getText(args, from, to, admins) {
   } else
   // Greetings
   if (comm === 'groot') {
-    returnArray.push('http://i.imgur.com/bAhbxaX.gif');
+    returnArray.push('http://i.imgur.com/LRA0MMT.gif');
   } else
   // What did you just say to me?
   if (comm === 'copypasta') {

@@ -1,36 +1,28 @@
 var irc = require('irc');
 var fs = require('fs');
 var reload = require('require-reload')(require);
+var cleverbot = require('cleverbot.io');
 var bot;
 reloadBot();
 
 var settings = JSON.parse(fs.readFileSync('settings.json'));
-var clients = [];
-
-settings.clients.forEach(function(client) {
-  var newClient = new irc.Client(client.server, client.user, {
-    userName: 'secret_bot',
-    realName: 'secret_online\'s bot'
-  });
-
-  newClient.addListener('message', onMessage);
-  newClient.addListener('join', onJoin);
-  newClient.addListener('notice', tryLogin);
-  if (client.pass)
-    newClient.addListener('registered', checkUsername);
-
-  newClient.clientSettings = client;
-  newClient.clientAdmins = settings.admins;
-
-  clients.push(newClient);
+var client = new irc.Client(settings.client.server, settings.client.user, {
+  userName: 'secret_bot',
+  realName: 'secret_online\'s bot'
 });
+
+client.addListener('message', onMessage);
+client.addListener('join', onJoin);
+client.addListener('notice', tryLogin);
+if (settings.client.pass)
+  client.addListener('registered', checkUsername);
+
+var cb = new cleverbot(settings.cleverbot.user, settings.cleverbot.key, settings.cleverbot.session);
 
 readConsole();
 
 process.on('beforeExit', function() {
-  clients.forEach(function(aBot) {
-    aBot.disconnect('well, we\'re OUT of cake');
-  });
+  client.disconnect('well, we\'re OUT of cake');
 });
 
 /**
@@ -40,8 +32,8 @@ process.on('beforeExit', function() {
 function checkUsername(message) {
   // If the username has been taken, and a new one (with a number on the end) has been assigned
   // try to Ghost the other user
-  if (this.nick.match(new RegExp(this.clientSettings.user + '[0-9]+'))) {
-    this.say('nickserv', 'ghost ' + this.clientSettings.user + ' ' + this.clientSettings.pass);
+  if (this.nick.match(new RegExp(settings.client.user + '[0-9]+'))) {
+    this.say('nickserv', 'ghost ' + settings.client.user + ' ' + settings.client.pass);
   }
 }
 
@@ -54,11 +46,11 @@ function tryLogin(nick, to, text, message) {
     botLog(nick + ' ' + message.args.join(' '));
     // Log in once NickSev sends the right messages
     if (nick === 'NickServ' && message.args.join(' ').match(/This nickname is registered and protected\./)) {
-      this.say('nickserv', 'identify ' + this.clientSettings.pass);
+      this.say('nickserv', 'identify ' + settings.client.pass);
     } else
     // When logged in, join the channels
     if (nick === 'NickServ' && message.args.join(' ').match(/Password accepted/)) {
-      this.clientSettings.channels.forEach(function(channel) {
+      settings.client.channels.forEach(function(channel) {
         this.join(channel);
       }, this);
       this.removeListener('notice', tryLogin);
