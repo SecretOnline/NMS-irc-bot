@@ -265,6 +265,20 @@ function getText(args, obj) {
       reply.push(getMeme(args[0]));
     }
   } else
+  // Cleverbot
+  if (comm = 'cb') {
+    cb.ask(processText(args, obj), function(err, response) {
+      if (err) {
+        reply.push('something went wrong with cleverbot');
+        reply.push('message: ' + response);
+      } else {
+        reply.push(response);
+      }
+      obj.callback(reply, to, sendSettings);
+    });
+    // Don't add to array, so nothing gets printed until a reply is recieved
+    //reply.push(getEmote(comm) + ' ' + processText(args, obj));
+  } else
   // Emotes
   if (emotes[comm]) {
     reply.push(getEmote(comm) + ' ' + processText(args, obj));
