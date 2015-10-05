@@ -136,6 +136,10 @@ function onJoin(channel, nick, message) {
     replyArray = ['Trent\'s here!', 'raise your ' + bot.emotes['dongers']];
   } else if (nick === 'Hipolipolopigus') {
     replyArray = ['Hipo!  o/'];
+  } else if (nick === 'secret_online') {
+    replyArray = ['oh, hello owner'];
+  } else if (nick === 'Gunter') {
+    replyArray = ['hi gunter'];
   }
 
   if (replyArray)
