@@ -243,12 +243,15 @@ function getText(args, from, to, admins) {
     returnArray.push("\"" + respawns[resIndex].text + "\"");
     returnArray.push("- " + respawns[resIndex].src);
   } else
+  // Greetings
+  if (comm === 'greet') {
+    returnArray = getWelcome(processText(args, from, to, admins));
+    if (!returnArray.length)
+      returnArray.push('nothing for you yet. you should probably yell at secret for that');
+  } else
   // What did you just say to me?
   if (comm === 'copypasta') {
-    //if (isAdmin(from, admins))
     returnArray.push(copyPasta + processText(args, from, to, admins));
-    //else
-    //  returnArray.push(processText(args, from, to, admins));
   } else
   // Get the meme link
   if (comm === 'meme') {
