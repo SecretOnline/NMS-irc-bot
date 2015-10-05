@@ -3,7 +3,6 @@ var fs = require('fs');
 var reload = require('require-reload')(require);
 var cleverbot = require('cleverbot.io');
 var bot;
-reloadBot();
 
 var settings = JSON.parse(fs.readFileSync('settings.json'));
 var client = new irc.Client(settings.client.server, settings.client.user, {
@@ -19,6 +18,7 @@ if (settings.client.pass)
 
 var cb = new cleverbot(settings.cleverbot.user, settings.cleverbot.key, settings.cleverbot.session);
 
+reloadBot();
 readConsole();
 
 process.on('beforeExit', function() {
@@ -98,18 +98,20 @@ function onMessage(nick, to, text, message) {
     if (comm === 'help' || comm === 'report')
       replyTo = nick;
     // Get text to send
-    try {
-      bot.getText(argArray, {
-        from: nick,
-        to: replyTo,
-        callback: sendArray,
-        sendSettings: settings
-      });
-    } catch (err) {
-      var replyArray = [err, 'this error has been logged'];
-      addToReportLog([err.message, message.args.splice(1).join(' ')], nick, true);
-      sendArray(replyArray, nick, settings);
-    }
+    process.nextTick(function() {
+      try {
+        bot.getText(argArray, {
+          from: nick,
+          to: replyTo,
+          callback: sendArray,
+          sendSettings: settings
+        });
+      } catch (err) {
+        var replyArray = [err, 'this error has been logged'];
+        addToReportLog([err.message, message.args.splice(1).join(' ')], nick, true);
+        sendArray(replyArray, nick, settings);
+      }
+    });
   }
 }
 
@@ -188,7 +190,7 @@ function botLog(text) {
 function isAdmin(nick) {
   var ret = false;
   settings.admins.forEach(function(admin) {
-    if (name === admin) {
+    if (nick === admin) {
       ret = true;
     }
   });

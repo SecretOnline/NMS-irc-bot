@@ -11,14 +11,14 @@ function getText(args, obj) {
   } else
   // Stop the bot, but only if admin
   if (comm === 'reload') {
-    if (isAdmin(obj.from)) {
+    if (this.isAdmin(obj.from)) {
       this.reloadBot();
       reply.push('reloaded');
     }
   } else
   // Run a command, but only if admin
   if (comm === 'eval') {
-    if (isAdmin(obj.from)) {
+    if (this.isAdmin(obj.from)) {
       reply.push(eval(processText(args, obj)).toString());
     } else {
       reply.push('due to the nature of this command, you are not able to use it.');
@@ -267,14 +267,14 @@ function getText(args, obj) {
   } else
   // Cleverbot
   if (comm = 'cb') {
-    cb.ask(processText(args, obj), function(err, response) {
+    this.cb.ask(processText(args, obj), function(err, response) {
       if (err) {
         reply.push('something went wrong with cleverbot');
         reply.push('message: ' + response);
       } else {
         reply.push(response);
       }
-      obj.callback(reply, to, sendSettings);
+      obj.callback(reply, obj.to, obj.sendSettings);
     });
     // Don't add to array, so nothing gets printed until a reply is recieved
     //reply.push(getEmote(comm) + ' ' + processText(args, obj));
@@ -286,7 +286,7 @@ function getText(args, obj) {
     reply.push(['invalid command: \'' + comm + '\'. please try again']);
 
   if (reply.length)
-    obj.callback(reply, to, sendSettings);
+    obj.callback(reply, obj.to, obj.sendSettings);
 }
 
 function getWelcome(nick) {
