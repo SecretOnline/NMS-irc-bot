@@ -207,7 +207,7 @@ function reloadBot() {
     bot.sendArray = sendArray;
     bot.isAdmin = isAdmin;
   } catch (e) {
-    addToReportLog(['failed to reload'], 'bot', false)
+    addToReportLog(['failed to reload'], 'bot', false);
   }
 }
 

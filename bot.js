@@ -398,6 +398,30 @@ function getClever(args, obj) {
     return reply;
 }
 
+function getRoll(args, obj) {
+  var reply = [];
+  var retString = "";
+  args.forEach(function(roll) {
+    if (roll.match(/\d+d\d+/)) {
+      var rSplit = roll.split('d');
+      var fResult = 0;
+      var rolls = "";
+      for (var i = 1; i <= rSplit[0]; i++) {
+        var result = Math.floor(Math.random() * rSplit[1]) + 1;
+        fResult += result;
+        rolls += result + '';
+        if (i != rSplit[0])
+          rolls += '+';
+      }
+      retString += fResult + ' (' + rolls + ') ';
+    } else
+      retString += 'bad roll ';
+  });
+  reply.push(retString);
+  if (reply.length)
+    return reply;
+}
+
 // Big functions dictionary
 var functions = {
   'alias': alias,
@@ -411,12 +435,7 @@ var functions = {
   'wiki': getWikiLink,
   'google': getGoogleLink,
   'lmgtfy': getLmgtfyLink,
-  'faq': getFaqLink,
-  'archive': getArchiveLink,
-  'rules': getRulesLink,
   'release': getRelease,
-  'countdown': getCountdownLink,
-  'planetreport': getPlanetReportLink,
   'inception': getInceptionNoise,
   'report': makeErrorReport,
   'generate': getUniverse,
@@ -426,8 +445,6 @@ var functions = {
   'jaden_latin': getJadenText,
   'ohdear_latin': getMessText,
   'ohfuck_latin': getFuckText,
-  'rip': getRip,
-  'hundreds': getHundreds,
   'thanks': getThanks,
   'prayer': getPrayer,
   'BANHAMMER': getBan,
@@ -435,6 +452,7 @@ var functions = {
   'greet': getGreeting,
   'coypasta': getCopyPasta,
   'meme': getMeme,
+  'roll': getRoll,
   //'cb': getClever
 };
 
