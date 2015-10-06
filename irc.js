@@ -17,6 +17,7 @@ if (settings.client.pass)
   client.addListener('registered', checkUsername);
 
 var cb = new cleverbot(settings.cleverbot.user, settings.cleverbot.key, settings.cleverbot.session);
+cb.create(function(err, session) {});
 
 reloadBot();
 readConsole();
@@ -100,12 +101,14 @@ function onMessage(nick, to, text, message) {
     // Get text to send
     process.nextTick(function() {
       try {
-        bot.getText(argArray, {
+        var reply = bot.getText(argArray, {
           from: nick,
           to: replyTo,
           callback: sendArray,
           sendSettings: settings
         });
+        if (reply.length)
+          sendArray(reply, obj.to, obj.sendSettings);
       } catch (err) {
         var replyArray = [err, 'this error has been logged'];
         addToReportLog([err.message, message.args.splice(1).join(' ')], nick, true);
@@ -199,6 +202,9 @@ function isAdmin(nick) {
 
 function reloadBot() {
   try {
+    cb = new cleverbot(settings.cleverbot.user, settings.cleverbot.key, settings.cleverbot.session);
+    cb.create(function(err, session) {});
+
     bot = reload('./bot.js');
     bot.addToReportLog = addToReportLog;
     bot.reloadBot = reloadBot;

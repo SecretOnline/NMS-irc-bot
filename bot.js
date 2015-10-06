@@ -1,3 +1,8 @@
+var fs = require('fs');
+
+var aliases = JSON.parse(fs.readFileSync('aliases.json'));
+
+
 /**
  * Returns an array of strings to send
  */
@@ -5,288 +10,18 @@ function getText(args, obj) {
   // Split into command + arguments for that command
   var comm = args.splice(0, 1)[0].substring(1);
   var reply = [];
-  // Stop the bot, but only if admin
-  if (comm === '') {
-    // Do nothing!
-  } else
-  // Stop the bot, but only if admin
-  if (comm === 'reload') {
-    if (this.isAdmin(obj.from)) {
-      this.reloadBot();
-      reply.push('reloaded');
-    }
-  } else
-  // Run a command, but only if admin
-  if (comm === 'eval') {
-    if (this.isAdmin(obj.from)) {
-      reply.push(eval(processText(args, obj)).toString());
-    } else {
-      reply.push('due to the nature of this command, you are not able to use it.');
-    }
-  } else
-  // Say, but only if admin
-  if (comm === 'raw') {
-    reply.push(args.join(' '));
-  } else
-  // Say, but only if admin
-  if (comm === 'say') {
-    reply.push(processText(args, obj));
-  } else
-  // Get help
-  if (comm === 'help')
-    return getHelp(args);
-  // Bot source
-  else if (comm === 'source') {
-    if (args.length)
-      reply.push('https://github.com/SecretOnline/NMS-irc-bot/blob/master/' + processText(args, obj));
-    else
-      reply.push('https://github.com/SecretOnline/NMS-irc-bot/ ' + processText(args, obj));
-  } else
-  // Flip words
-  if (comm === 'oneline') {
-    // Add to return array
-    reply.push(processText(args, obj));
-  } else
-  // Flip words
-  if (comm === 'flip') {
-    // Add to return array
-    reply.push(flip(processText(args, obj)));
-  } else
-  // Wikipedia links
-  if (comm === 'wiki') {
-    var url = 'https://en.wikipedia.org/wiki/';
-    if (args.length > 0)
-      url += toTitleCase(processText(args, obj));
-    else
-      url += 'Main_Page';
-    url = url.replace(/ /g, '_');
-    url = encodeURI(url);
-    url = url.replace(/'/g, '%27');
-    reply.push(url);
-  } else
-  // Google links
-  if (comm === 'google') {
-    var url = 'https://www.google.com/';
-    if (args.length > 0)
-      url += 'search?q=' + processText(args, obj);
-    url = url.replace(/ /g, '+');
-    url = encodeURI(url);
-    url = url.replace(/'/g, '%27');
-    reply.push(url);
-  } else
-  // Let me Google that for you
-  if (comm === 'lmgtfy') {
-    var url = 'http://lmgtfy.com/';
-    if (args.length > 0)
-      url += '?q=' + processText(args, obj);
-    url = url.replace(/ /g, '+');
-    url = encodeURI(url);
-    url = url.replace(/'/g, '%27');
-    reply.push(url);
-  } else
-  // Kickstart trivia
-  if (comm === 'ks') {
-    reply.push('.trivia kickstart');
-  } else
-  // NMS FAQ
-  if (comm === 'faq') {
-    reply.push('https://www.reddit.com/r/NoMansSkyTheGame/wiki/faq ' + processText(args, obj));
-  } else
-  // NMS FAQ
-  if (comm === 'archive') {
-    reply.push('https://www.reddit.com/r/NoMansSkyTheGame/wiki/archive ' + processText(args, obj));
-  } else
-  // NMS rules
-  if (comm === 'rules') {
-    reply.push('https://www.reddit.com/r/NoMansSkyTheGame/wiki/rules ' + processText(args, obj));
-  } else
-  // Bot accusation
-  if (comm === 'bot') {
-    reply.push('no, you\'re a bot, ' + processText(args, obj));
-    //reply.push('no, you\'re a bot, undefined');
-  } else
-  // Release
-  if (comm === 'release') {
-    var result = 'It\'s a secret™';
 
-    if (args.length) {
-      reply.push('Estimated release of ' + processText(args, obj) + ':');
-    } else
-      reply.push('Estimated release of No Man\'s Sky: ');
-    reply.push(result);
-    // if (showCountdown)
-    //   reply.push('(when we have a date, go to ~countdown for a, well, countdown)');
-  } else
-  // Release
-  if (comm === 'countdown') {
-    reply.push('http://secretonline.github.io/NMS-Countdown');
-  } else
-  // Report generator
-  if (comm === 'planetreport') {
-    reply.push('http://secretonline.github.io/NMS-Report');
-  } else
-  // Report generator
-  if (comm === 'inception') {
-    reply.push('http://inception.davepedu.com/inception.mp3');
-    reply.push('warning: noise');
-  } else
-  // Sean's mindblow
-  if (comm === 'mindblow') {
-    reply.push('http://i.imgur.com/8pTSVjV.gif');
-  } else
-  // Release
-  if (comm === 'hint') {
-    reply.push('what. you think i know the answer? ' + processText(args, obj));
-  } else
-  // CHOO CHOO
-  if (comm === 'hype') {
-    reply.push('choo choo ' + processText(args, obj));
-  } else
-  if (comm === 'HYPE') {
-    reply.push('CHOO CHOO! ALL ABOARD ' + processText(args, obj));
-  } else
-  if (comm === 'HYPETRAIN') {
-    reply.push('/|˳˳_˳˳|[˳˳H˳˳]¬˳˳Y˳˳⌐(˳˳P˳˳)\\˳˳E˳˳/|˳˳!˳˳| ' + processText(args, obj));
-  } else
-  // REPORT
-  if (comm === 'report') {
-    addToReportLog([processText(args, obj)], obj.from);
-    reply.push('your error has been logged. Thanks ' + obj.from);
-  } else
-  // A joke, for devinup
-  if (comm === 'generate') {
-    reply.push('generating universe');
-    var numEmotes = Math.floor(Math.random() * 3) + 2;
-    for (var j = 0; j < numEmotes; j++)
-      reply.push(emotes[Object.keys(emotes)[Math.floor(Math.random() * Object.keys(emotes).length)]]);
-    reply.push('generation complete');
-  } else
-  // A joke, for irc
-  if (comm === 'procedural') {
-    var index = Math.floor(Math.random() * procedural.length);
-    var text;
+  if (functions[comm])
+    reply = functions[comm](args, obj);
+  else if (emotes[comm])
+    reply.push(emotes[comm]);
+  else if (aliases[comm])
+    reply.push(aliases[comm] + ' ' + processText(args, obj));
+  else {
+    reply.push('invalid command \'' + comm + '\'');
+  }
 
-    if (args.length) {
-      text = processText(args, obj);
-    }
-
-    if (!text)
-      text = procedural[index];
-
-    reply.push('Every ' + text + ' procedural');
-  } else
-  // A joke, for melanon68
-  if (comm === 'secret_latin') {
-    reply.push(getSecretLatin(processText(args, obj)));
-  } else
-  // A joke, for trkmstrwggy
-  if (comm === 'trk_latin') {
-    reply.push(getTrkLatin(processText(args, obj)));
-  } else
-  // A joke, for a certain Mr. Smith
-  if (comm === 'jaden_latin') {
-    reply.push(toTitleCase(processText(args, obj)));
-  } else
-  // A joke, for a Hipo and I
-  if (comm === 'ohdear_latin') {
-    reply.push(getSecretLatin(getTrkLatin(toTitleCase(processText(args, obj)))));
-  } else
-  // A joke, for trk and I
-  if (comm === 'ohfuck_latin') {
-    reply.push(flip(getSecretLatin(getTrkLatin(toTitleCase(processText(args, obj))))));
-  } else
-  // A joke, for a Hipo and I
-  if (comm === 'cut') {
-    reply.push('hey, that\'s not nice.');
-  } else
-  // A joke, for a Hipo and I
-  if (comm === 'rip') {
-    reply.push('rip in peace, ' + processText(args, obj));
-  } else
-  // A joke, for a Hipo and I
-  if (comm === 'soon') {
-    reply.push('not soon enough :(');
-  } else
-  // A joke, for Snappin
-  if (comm === 'hundreds') {
-    reply.push('hundreds, if not thousands, of ' + processText(args, obj));
-  } else
-  // A joke, for trk and I
-  if (comm === 'thanks') {
-    if (from === 'secret_online')
-      reply.push('yeah, yeah. you created me.');
-    else
-      reply.push('you\'re welcome.');
-  } else
-  // A joke, for trkmstrwggy
-  if (comm === 'prayer') {
-    reply.push('Our Murray who art in Guildford,');
-    reply.push('procedural be thy name.');
-    reply.push('Thy universe come, thy game be done,');
-    reply.push('on Planet E3 as in Ethaedair.');
-    reply.push('Give us this day our IGN First,');
-    reply.push('and forgive our questions,');
-    reply.push('as we forgive those who don\'t read the FAQ.');
-    reply.push('Lead us not into release hype,');
-    reply.push('but deliver us the game.');
-    reply.push('For thine is Hello Games, the proc-gen, and the awards.');
-    reply.push('A-space-goat.');
-  } else
-  // A joke, for a Hipo and I
-  if (comm === 'BANHAMMER') {
-    if (args.length) {
-      reply.push('BANNING ' + processText(args, obj));
-    } else
-      reply.push('so, uh... you going to specify who to let the banhammer loose on?');
-  } else
-  // What did you just say to me?
-  if (comm === 'respawn') {
-    var resIndex = Math.floor(Math.random() * Object.keys(respawns).length);
-    reply.push("\"" + respawns[resIndex].text + "\"");
-    reply.push("- " + respawns[resIndex].src);
-  } else
-  // Greetings
-  if (comm === 'greet') {
-    reply = getWelcome(processText(args, obj));
-    if (!reply.length)
-      reply.push('nothing for you yet. you should probably yell at secret for that');
-  } else
-  // Greetings
-  if (comm === 'groot') {
-    reply.push('http://i.imgur.com/LRA0MMT.gif');
-  } else
-  // What did you just say to me?
-  if (comm === 'copypasta') {
-    reply.push(copyPasta + processText(args, obj));
-  } else
-  // Get the meme link
-  if (comm === 'meme') {
-    if (args[0] && memes[args[0]]) {
-      reply.push(getMeme(args[0]));
-    }
-  } else
-  // Cleverbot
-  if (comm = 'cb') {
-    this.cb.ask(processText(args, obj), function(err, response) {
-      if (err) {
-        reply.push('something went wrong with cleverbot');
-        reply.push('message: ' + response);
-      } else {
-        reply.push(response);
-      }
-      obj.callback(reply, obj.to, obj.sendSettings);
-    });
-    // Don't add to array, so nothing gets printed until a reply is recieved
-    //reply.push(getEmote(comm) + ' ' + processText(args, obj));
-  } else
-  // Emotes
-  if (emotes[comm]) {
-    reply.push(getEmote(comm) + ' ' + processText(args, obj));
-  } else
-    reply.push(['invalid command: \'' + comm + '\'. please try again']);
-
-  if (reply.length)
-    obj.callback(reply, obj.to, obj.sendSettings);
+  return reply;
 }
 
 function getWelcome(nick) {
@@ -335,6 +70,420 @@ function processText(words, obj) {
 
   return str;
 }
+
+/**
+ * Functions
+ */
+/* TEMPLATE FUNCTION
+function template(args, obj) {
+  var reply = [];
+  // STUFF
+  if (reply.length)
+    return reply;
+} */
+function alias(args, obj) {
+  var reply = [];
+  if (this.isAdmin(obj.from)) {
+    var comm = args.splice(0, 1)[0];
+    if (comm === 'add') {
+      var res = processText(args, obj);
+      if (aliases[comm])
+        reply.push('alias already exists')
+      else {
+        aliases[comm] = res;
+        reply.push('alias \'' + comm + '\' added');
+      }
+    } else if (comm === 'remove') {
+      if (aliases[comm]) {
+        delete aliases[comm];
+        reply.push('alias \'' + comm + '\' removed');
+      } else
+        reply.push('alias doesn\'t exist');
+    }
+
+    fs.writeFileSync('aliases.json', JSON.stringify(aliases, null, 2));
+  } else
+    reply.push('you do not have permission to ');
+
+  return reply;
+}
+
+function reload(args, obj) {
+  var reply = [];
+  // Check user status
+  if (this.isAdmin(obj.from)) {
+    // Reload bot functions
+    this.reloadBot();
+    reply.push('reloaded');
+  }
+  return reply;
+}
+
+function evaluate(args, obj) {
+  var reply = [];
+  // Check user status
+  if (this.isAdmin(obj.from)) {
+    // Evaluate input
+    reply.push(eval(processText(args, obj)).toString());
+  } else {
+    // User not allowed to use ~eval
+    reply.push('due to the nature of this command, you are not able to use it.');
+  }
+  if (reply.length)
+    return reply;
+}
+
+function sayRaw(args, obj) {
+  var reply = [];
+  reply.push(args.join(' '));
+  if (reply.length)
+    return reply;
+}
+
+function say(args, obj) {
+  var reply = [];
+  reply.push(processText(args, obj));
+  if (reply.length)
+    return reply;
+}
+
+function help(args, obj) {
+  var reply = [];
+  reply = getHelp(args);
+  if (reply.length)
+    return reply;
+}
+
+function getSource(args, obj) {
+  var reply = [];
+  if (args.length)
+  // Link to a file
+    reply.push('https://github.com/SecretOnline/NMS-irc-bot/blob/master/' + processText(args, obj));
+  else
+  // Link to main page
+    reply.push('https://github.com/SecretOnline/NMS-irc-bot/ ' + processText(args, obj));
+  if (reply.length)
+    return reply;
+}
+
+function getFlip(args, obj) {
+  var reply = [];
+  // Add to return array
+  reply.push(flip(processText(args, obj)));
+  if (reply.length)
+    return reply;
+}
+
+function getWikiLink(args, obj) {
+  var reply = [];
+  var url = 'https://en.wikipedia.org/wiki/';
+  if (args.length > 0)
+    url += toTitleCase(processText(args, obj));
+  else
+    url += 'Main_Page';
+  url = url.replace(/ /g, '_');
+  url = encodeURI(url);
+  url = url.replace(/'/g, '%27');
+  reply.push(url);
+  if (reply.length)
+    return reply;
+}
+
+function getGoogleLink(args, obj) {
+  var reply = [];
+  var url = 'https://www.google.com/';
+  if (args.length > 0)
+    url += 'search?q=' + processText(args, obj);
+  url = url.replace(/ /g, '+');
+  url = encodeURI(url);
+  url = url.replace(/'/g, '%27');
+  reply.push(url);
+  if (reply.length)
+    return reply;
+}
+
+function getLmgtfyLink(args, obj) {
+  var reply = [];
+  var url = 'http://lmgtfy.com/';
+  if (args.length > 0)
+    url += '?q=' + processText(args, obj);
+  url = url.replace(/ /g, '+');
+  url = encodeURI(url);
+  url = url.replace(/'/g, '%27');
+  reply.push(url);
+  if (reply.length)
+    return reply;
+}
+
+function getFaqLink(args, obj) {
+  var reply = [];
+  reply.push('https://www.reddit.com/r/NoMansSkyTheGame/wiki/faq ' + processText(args, obj));
+  if (reply.length)
+    return reply;
+}
+
+function getArchiveLink(args, obj) {
+  var reply = [];
+  reply.push('https://www.reddit.com/r/NoMansSkyTheGame/wiki/archive ' + processText(args, obj));
+  if (reply.length)
+    return reply;
+}
+
+function getRulesLink(args, obj) {
+  var reply = [];
+  reply.push('https://www.reddit.com/r/NoMansSkyTheGame/wiki/rules ' + processText(args, obj));
+  if (reply.length)
+    return reply;
+}
+
+function getRelease(args, obj) {
+  var reply = [];
+
+  var result = 'It\'s a secret™';
+
+  if (args.length) {
+    reply.push('Estimated release of ' + processText(args, obj) + ':');
+  } else
+    reply.push('Estimated release of No Man\'s Sky: ');
+  reply.push(result);
+
+  if (reply.length)
+    return reply;
+}
+
+function getCountdownLink(args, obj) {
+  var reply = [];
+  reply.push('http://secretonline.github.io/NMS-Countdown');
+  if (reply.length)
+    return reply;
+}
+
+function getPlanetReportLink(args, obj) {
+  var reply = [];
+  reply.push('http://secretonline.github.io/NMS-Report');
+  if (reply.length)
+    return reply;
+}
+
+function getInceptionNoise(args, obj) {
+  var reply = [];
+  reply.push('http://inception.davepedu.com/inception.mp3');
+  reply.push('warning: noise');
+  if (reply.length)
+    return reply;
+}
+
+function makeErrorReport(args, obj) {
+  var reply = [];
+  this.addToReportLog([processText(args, obj)], obj.from);
+  reply.push('your error has been logged. Thanks ' + obj.from);
+  if (reply.length)
+    return reply;
+}
+
+function getUniverse(args, obj) {
+  var reply = [];
+  reply.push('generating universe');
+  var numEmotes = Math.floor(Math.random() * 3) + 2;
+  for (var j = 0; j < numEmotes; j++)
+    reply.push(emotes[Object.keys(emotes)[Math.floor(Math.random() * Object.keys(emotes).length)]]);
+  reply.push('generation complete');
+  if (reply.length)
+    return reply;
+}
+
+function getProcedural(args, obj) {
+  var reply = [];
+  var index = Math.floor(Math.random() * procedural.length);
+  var text;
+
+  if (args.length) {
+    text = processText(args, obj);
+  }
+
+  if (!text)
+    text = procedural[index];
+
+  reply.push('Every ' + text + ' procedural');
+  if (reply.length)
+    return reply;
+}
+
+function getSecretText(args, obj) {
+  var reply = [];
+  reply.push(getSecretLatin(processText(args, obj)));
+  if (reply.length)
+    return reply;
+}
+
+function getTrkText(args, obj) {
+  var reply = [];
+  reply.push(getTrkLatin(processText(args, obj)));
+  if (reply.length)
+    return reply;
+}
+
+function getJadenText(args, obj) {
+  var reply = [];
+  reply.push(toTitleCase(processText(args, obj)));
+  if (reply.length)
+    return reply;
+}
+
+function getMessText(args, obj) {
+  var reply = [];
+  reply.push(getSecretLatin(getTrkLatin(toTitleCase(processText(args, obj)))));
+  if (reply.length)
+    return reply;
+}
+
+function getFuckText(args, obj) {
+  var reply = [];
+  reply.push(flip(getSecretLatin(getTrkLatin(toTitleCase(processText(args, obj))))));
+  if (reply.length)
+    return reply;
+}
+
+function getRip(args, obj) {
+  var reply = [];
+  reply.push('rip in peace, ' + processText(args, obj));
+  if (reply.length)
+    return reply;
+}
+
+function getHundreds(args, obj) {
+  var reply = [];
+  reply.push('hundreds, if not thousands, of ' + processText(args, obj));
+  if (reply.length)
+    return reply;
+}
+
+function getThanks(args, obj) {
+  var reply = [];
+  if (from === 'secret_online')
+    reply.push('yeah, yeah. you created me.');
+  else
+    reply.push('you\'re welcome.');
+  if (reply.length)
+    return reply;
+}
+
+function getPrayer(args, obj) {
+  var reply = [];
+  reply.push('Our Murray who art in Guildford,');
+  reply.push('procedural be thy name.');
+  reply.push('Thy universe come, thy game be done,');
+  reply.push('on Planet E3 as in Ethaedair.');
+  reply.push('Give us this day our IGN First,');
+  reply.push('and forgive our questions,');
+  reply.push('as we forgive those who don\'t read the FAQ.');
+  reply.push('Lead us not into release hype,');
+  reply.push('but deliver us the game.');
+  reply.push('For thine is Hello Games, the proc-gen, and the awards.');
+  reply.push('A-space-goat.');
+  if (reply.length)
+    return reply;
+}
+
+function getBan(args, obj) {
+  var reply = [];
+  if (args.length) {
+    reply.push('BANNING ' + processText(args, obj));
+  } else
+    reply.push('so, uh... you going to specify who to let the banhammer loose on?');
+  if (reply.length)
+    return reply;
+}
+
+function getRespawn(args, obj) {
+  var reply = [];
+  var resIndex = Math.floor(Math.random() * Object.keys(respawns).length);
+  reply.push("\"" + respawns[resIndex].text + "\"");
+  reply.push("- " + respawns[resIndex].src);
+  if (reply.length)
+    return reply;
+}
+
+function getGreeting(args, obj) {
+  var reply = [];
+  reply = getWelcome(processText(args, obj));
+  if (!reply.length)
+    reply.push('nothing for you yet. you should probably yell at secret for that');
+  if (reply.length)
+    return reply;
+}
+
+function getCopyPasta(args, obj) {
+  var reply = [];
+  reply.push(copyPasta + processText(args, obj));
+  if (reply.length)
+    return reply;
+}
+
+function getMeme(args, obj) {
+  var reply = [];
+  if (args[0] && memes[args[0]]) {
+    reply.push(getMeme(args[0]));
+  }
+  if (reply.length)
+    return reply;
+}
+
+function getClever(args, obj) {
+  var reply = [];
+  this.cb.ask(processText(args, obj), function(err, response) {
+    if (err) {
+      reply.push('something went wrong with cleverbot');
+      reply.push('message: ' + response);
+    } else {
+      reply.push(response);
+    }
+    obj.callback(reply, obj.to, obj.sendSettings);
+  });
+  if (reply.length)
+    return reply;
+}
+
+// Big functions dictionary
+var functions = {
+  'alias': alias,
+  'reload': reload,
+  'eval': evaluate,
+  'say': say,
+  'raw': sayRaw,
+  'help': help,
+  'source': getSource,
+  'flip': getFlip,
+  'wiki': getWikiLink,
+  'google': getGoogleLink,
+  'lmgtfy': getLmgtfyLink,
+  'faq': getFaqLink,
+  'archive': getArchiveLink,
+  'rules': getRulesLink,
+  'release': getRelease,
+  'countdown': getCountdownLink,
+  'planetreport': getPlanetReportLink,
+  'inception': getInceptionNoise,
+  'report': makeErrorReport,
+  'generate': getUniverse,
+  'procedural': getProcedural,
+  'secret_latin': getSecretText,
+  'trk_latin': getTrkText,
+  'jaden_latin': getJadenText,
+  'ohdear_latin': getMessText,
+  'ohfuck_latin': getFuckText,
+  'rip': getRip,
+  'soon': getSoon,
+  'hundreds': getHundreds,
+  'thanks': getThanks,
+  'prayer': getPrayer,
+  'BANHAMMER': getBan,
+  'respawn': getRespawn,
+  'greet': getGreeting,
+  'coypasta': getCopyPasta,
+  'meme': getMeme,
+  'cb': getClever
+};
 
 function getSecretLatin(string) {
   var words = string.split(' ');
@@ -393,6 +542,7 @@ var emotes = {
   'lennytable': '(╯ ͡° ͜ʖ ͡°)╯︵ ┻━┻',
   'wattable': '(╯ಠ▃ಠ)╯︵ ┻━┻',
   'fu': 'ಠ︵ಠ凸',
+  'HYPETRAIN': '/|˳˳_˳˳|[˳˳H˳˳]¬˳˳Y˳˳⌐(˳˳P˳˳)\\˳˳E˳˳/|˳˳!˳˳|',
   'lenny': '( ͡° ͜ʖ ͡°)',
   'lennymob': '( ͡° ͜ʖ ( ͡° ͜ʖ ( ͡° ͜ʖ ( ͡° ͜ʖ ͡°) ͜ʖ ͡°)ʖ ͡°)ʖ ͡°)',
   'lennymoney': '[̲̅$̲̅(̲̅ ͡° ͜ʖ ͡°̲̅)̲̅$̲̅]',
@@ -583,10 +733,10 @@ function getHelp(helpArgs) {
       return wikiHelp[0];
     // If it's emote listing
   else if (helpArgs[0] === 'emotes')
-    return ['list of emotes', 'type \'~[emote name]\' to use', ' '].concat(Object.keys(emotes));
+    return ['list of emotes', 'type \'~[emote name]\' to use', ' ', Object.keys(emotes).join(', ')];
   // Meme listing
   else if (helpArgs[0] === 'memes')
-    return ['list of memes', 'type \'~meme [meme name]\' to use', ' '].concat(Object.keys(memes));
+    return ['list of memes', 'type \'~meme [meme name]\' to use', ' ', Object.keys(memes).join(', ')];
   return ['Unknown help argument'];
 }
 
@@ -647,5 +797,6 @@ module.exports = {
   getWelcome: getWelcome,
   getHelp: getHelp,
   processText: processText,
-  emotes: emotes
+  emotes: emotes,
+  functions: functions
 };
