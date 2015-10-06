@@ -10,11 +10,14 @@ function getText(args, obj) {
   // Split into command + arguments for that command
   var comm = args.splice(0, 1)[0].substring(1);
   var reply = [];
-  obj.this = this;
+  obj.f = this.externalFunctions;
 
-  if (functions[comm])
-    reply = functions[comm](args, obj);
-  else if (emotes[comm])
+  if (functions[comm]) {
+    if (typeof functions[comm] === 'function')
+      reply = functions[comm](args, obj);
+    else if (typeof functions[comm] === 'object')
+      reply = functions[comm].f(args, obj)
+  } else if (emotes[comm])
     reply.push(emotes[comm]);
   else if (aliases[comm])
     reply.push(aliases[comm] + ' ' + processText(args, obj));
@@ -84,13 +87,13 @@ function template(args, obj) {
 } */
 function alias(args, obj) {
   var reply = [];
-  if (obj.this.isAdmin(obj.from)) {
+  if (obj.f.isAdmin(obj.from)) {
     var comm = args.splice(0, 1)[0];
     var key = args.splice(0, 1)[0];
     if (comm === 'add') {
       var res = processText(args, obj);
       if (aliases[key])
-        reply.push('alias already exists')
+        reply.push('alias already exists');
       else {
         aliases[key] = res;
         reply.push('alias \'' + key + '\' added');
@@ -113,9 +116,9 @@ function alias(args, obj) {
 function reload(args, obj) {
   var reply = [];
   // Check user status
-  if (obj.this.isAdmin(obj.from)) {
+  if (obj.f.isAdmin(obj.from)) {
     // Reload bot functions
-    obj.this.reloadBot();
+    obj.f.reloadBot();
     aliases = JSON.parse(fs.readFileSync('aliases.json'));
     reply.push('reloaded');
   }
@@ -125,7 +128,7 @@ function reload(args, obj) {
 function evaluate(args, obj) {
   var reply = [];
   // Check user status
-  if (obj.this.isAdmin(obj.from)) {
+  if (obj.f.isAdmin(obj.from)) {
     // Evaluate input
     reply.push(eval(processText(args, obj)).toString());
   } else {
@@ -429,22 +432,52 @@ var functions = {
   'eval': evaluate,
   'say': say,
   'raw': sayRaw,
-  'help': help,
+  'help': {
+    f: getHelp,
+    help: helpHelp
+  },
   'source': getSource,
-  'flip': getFlip,
-  'wiki': getWikiLink,
-  'google': getGoogleLink,
-  'lmgtfy': getLmgtfyLink,
+  'flip': {
+    f: getFlip,
+    help: flipHelp
+  },
+  'wiki': {
+    f: getWikiLink,
+    help: linkHelp
+  },
+  'google': {
+    f: getGoogleLink,
+    help: linkHelp
+  },
+  'lmgtfy': {
+    f: getLmgtfyLink,
+    help: linkHelp
+  },
   'release': getRelease,
   'inception': getInceptionNoise,
   'report': makeErrorReport,
   'generate': getUniverse,
   'procedural': getProcedural,
-  'secret_latin': getSecretText,
-  'trk_latin': getTrkText,
-  'jaden_latin': getJadenText,
-  'ohdear_latin': getMessText,
-  'ohfuck_latin': getFuckText,
+  'secret_latin': {
+    f: getSecretText,
+    help: latinHelp
+  },
+  'trk_latin': {
+    f: getTrkText,
+    help: latinHelp
+  },
+  'jaden_latin': {
+    f: getJadenText,
+    help: latinHelp
+  },
+  'ohdear_latin': {
+    f: getMessText,
+    help: latinHelp
+  },
+  'ohfuck_latin': {
+    f: getFuckText,
+    help: latinHelp
+  },
   'thanks': getThanks,
   'prayer': getPrayer,
   'BANHAMMER': getBan,
@@ -677,88 +710,77 @@ for (var i in flipTable) {
   flipTable[flipTable[i]] = i;
 }
 
-/**
- * Help
- */
-function getHelp(helpArgs) {
-  // If no number specified, make it 1
-  if (helpArgs.length === 0)
-    helpArgs.push('1');
-  // If no other arg, show main help
-  if (helpArgs[0].match(/^[0-9]+$/) && helpArgs[0] <= mainHelp.length)
-    return mainHelp[helpArgs[0] - 1];
-  // Now we're past that, if there's no number, add 1
-  if (helpArgs.length === 1)
-    helpArgs.push('1');
-  // If it's flip help
-  if (helpArgs[0] === 'flip')
-    if (helpArgs[1].match(/^[0-9]+$/) && helpArgs[1] <= flipHelp.length)
-      return flipHelp[helpArgs[0] - 1];
-    else
-      return flipHelp[0];
-    // If it's wiki help
-  else if (helpArgs[0] === 'wiki')
-    if (helpArgs[1].match(/^[0-9]+$/) && helpArgs[1] <= wikiHelp.length)
-      return wikiHelp[helpArgs[0] - 1];
-    else
-      return wikiHelp[0];
-    // If it's emote listing
-  else if (helpArgs[0] === 'emotes')
-    return ['list of emotes', 'type \'~[emote name]\' to use', ' ', Object.keys(emotes).join(', ')];
-  // Meme listing
-  else if (helpArgs[0] === 'memes')
-    return ['list of memes', 'type \'~meme [meme name]\' to use', ' ', Object.keys(memes).join(', ')];
-  return ['Unknown help argument'];
+var flipHelp = [
+  'flip',
+  'this command will flip any text upside down',
+  '(not all characters work just yet. soon(tm))',
+  'the flip command supports emote injection',
+  'example usage:',
+  '~flip example text',
+  '~flip ~dance'
+];
+var linkHelp = [
+  '`wiki`, `google`, and `lmgtfy`',
+  'these commands simply links to a page',
+  'it performs no checks to see if the link is to a valid page or not.',
+  'example usage:',
+  '~wiki no man\'s sky',
+  '~google ~lenny',
+  '~lmgtfy no man\'s sky release date'
+];
+var latinHelp = [
+  '`secret_latin`, `trk_latin`, `jaden_latin`, `ohdear_latin`, and `ohfuck_latin`',
+  'these commands will warp text',
+  '`secret_latin` swaps the first two characters of words',
+  '`trk_latin` removes all vowels and \'c\'s',
+  '`jaden_latin` Puts Things In Title Case',
+  '`ohdear_latin` does the other three in one go',
+  '`ohfuck_latin` flips `ohdear_latin`'
+];
+
+function getHelp(args, obj) {
+  var reply = [];
+  if (args.length === 0) {
+    reply = reply.concat(helpHelp);
+  } else {
+    if (args[0] === 'commands') {
+      var commString = "";
+      var keys = Object.keys(functions);
+      for (var i = 0; i < keys.length; i++) {
+        var key = keys[i];
+        commString += key;
+        if (typeof functions[key] === 'object')
+          if (functions[key].help)
+            commString += '*';
+        if (i !== keys.length - 1)
+          commString += ', ';
+      }
+      reply.push('list of commands');
+      reply.push('`*` denotes detailed help');
+      reply.push(commString);
+    } else if (args[0] === 'emotes') {
+      reply.push('list of emotes');
+      reply.push(emotes.join(', '));
+    } else if (args[0] === 'aliases') {
+      reply.push('list of aliases');
+      reply.push(aliases.join(', '));
+    } else if (typeof functions[args[0]] === 'object') {
+      if (functions[args[0]].help)
+        reply = reply.concat(functions[args[0]].help);
+    } else {
+      repy.push('invalid help argument')
+    }
+  }
+  return reply;
 }
 
-var mainHelp = [
-  [
-    'secret_bot help',
-    'page 1 of 2',
-    'commands can use either \'`\' or \'~\'',
-    '` commands are replied to you in a private message (may change)',
-    '~ commands are replied to the channel they were sent to',
-    'EXCEPTION: all help commands are sent via pm',
-    'commands can be sent to the bot via pm or in a channel',
-    'type \'`help 2\' (or \'~help 2\') to see a list of commands'
-  ],
-  [
-    'page 2 of 2',
-    'countdown: ',
-    '[emote name]: show unicode emote. \'help emotes\' to see a list',
-    'faq: link to the /r/NoMansSkyTheGame faq',
-    'flip [text to flip]: flip it and reverse it.',
-    'ks: print \'.trivia kickstart\'',
-    'wiki [page]: link to a page of wikipedia',
-    'meme [meme name]: link to a meme. \'help memes\' to see a list',
-    'report [description of error]: write an error report',
-    'respawn: give one of the known respawn texts from the game',
-    'say [text to say]: make secret_bot say some text',
-    'source: link to the source code of the bot'
-  ]
-];
-var flipHelp = [
-  [
-    'flip',
-    'this command will flip any text upside down',
-    '(not all characters work just yet. soon(tm))',
-    'the flip command supports emote injection',
-    'example usage:',
-    '~flip example text',
-    '~flip ~dance'
-  ]
-];
-var wikiHelp = [
-  [
-    'wiki',
-    'this command simply links to a wikipedia page',
-    'it performs no checks to see if the link is to',
-    'a valid page or not.',
-    'the wiki command supports emote injection',
-    'example usage:',
-    '~wiki no man\'s sky',
-    '~wiki ~lenny'
-  ]
+var helpHelp = [
+  'secret_bot help',
+  '`~help commands` - list of commands',
+  '`~help emotes` - list of emotes',
+  '`~help aliases` - list of aliases (basic commands)',
+  'bot version: something',
+  'contact secret_online if you\'re having problems'
 ];
 
 var copyPasta = "What did you just say about me? I\'ll have you know I graduated top of my class in the NoManNauts, and I\'ve been involved in numerous secret raids on Hello Games, and I have over 300 confirmed planet sightings. I am trained in space-goat warfare and I\'m the top pilot in the entirety /r/NoMansSkyTheGame. You are nothing to me but just another goat. I will wipe you out with proc-gen tech the likes of which has never been seen before in this system, mark my words. You think you can get away with saying that to me over IRC? Think again. As we speak I am contacting my secret network of sentinels across the galaxy and your ship is being traced right now so you better prepare for the storm. The storm that wipes out the pathetic little thing you call Ictaloris Hyphus. You\'re dead, kid. I can warp anywhere, anytime, and I can kill you in over 18 quintillion ways, and thats just with my multitool. Not only am I extensively trained in multitool combat, but I have access to the entire arsenal of the Malevolent Force and I will use it to its full extent to wipe your E3 Fish off the face of the universe. If only you could have known what unholy retribution your little clever comment was about to bring down upon you, maybe you would have held your tongue. But you couldn\'t, you didn\'t, and now you\'re paying the price. I will fire plasma grenades all over you and you will explode in it. You\'re dead, space-goat.";

@@ -202,10 +202,11 @@ function reloadBot() {
   try {
 
     bot = reload('./bot.js');
-    bot.addToReportLog = addToReportLog;
-    bot.reloadBot = reloadBot;
-    bot.sendArray = sendArray;
-    bot.isAdmin = isAdmin;
+    bot.externalFunctions = {
+      'addToReportLog': addToReportLog,
+      'reloadBot': reloadBot,
+      'isAdmin': isAdmin
+    };
   } catch (e) {
     addToReportLog(['failed to reload'], 'bot', false);
   }
