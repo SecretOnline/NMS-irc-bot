@@ -85,18 +85,19 @@ function alias(args, obj) {
   var reply = [];
   if (this.isAdmin(obj.from)) {
     var comm = args.splice(0, 1)[0];
+    var key = args.splice(0, 1)[0];
     if (comm === 'add') {
       var res = processText(args, obj);
-      if (aliases[comm])
+      if (aliases[key])
         reply.push('alias already exists')
       else {
-        aliases[comm] = res;
-        reply.push('alias \'' + comm + '\' added');
+        aliases[key] = res;
+        reply.push('alias \'' + key + '\' added');
       }
     } else if (comm === 'remove') {
-      if (aliases[comm]) {
-        delete aliases[comm];
-        reply.push('alias \'' + comm + '\' removed');
+      if (aliases[key]) {
+        delete aliases[key];
+        reply.push('alias \'' + key + '\' removed');
       } else
         reply.push('alias doesn\'t exist');
     }
@@ -114,6 +115,7 @@ function reload(args, obj) {
   if (this.isAdmin(obj.from)) {
     // Reload bot functions
     this.reloadBot();
+    aliases = JSON.parse(fs.readFileSync('aliases.json'));
     reply.push('reloaded');
   }
   return reply;
@@ -473,7 +475,6 @@ var functions = {
   'ohdear_latin': getMessText,
   'ohfuck_latin': getFuckText,
   'rip': getRip,
-  'soon': getSoon,
   'hundreds': getHundreds,
   'thanks': getThanks,
   'prayer': getPrayer,
@@ -482,7 +483,7 @@ var functions = {
   'greet': getGreeting,
   'coypasta': getCopyPasta,
   'meme': getMeme,
-  'cb': getClever
+  //'cb': getClever
 };
 
 function getSecretLatin(string) {

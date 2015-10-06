@@ -2,7 +2,8 @@ var irc = require('irc');
 var fs = require('fs');
 var reload = require('require-reload')(require);
 var cleverbot = require('cleverbot.io');
-var bot;
+var bot = reload('./bot.js');
+reloadBot();
 
 var settings = JSON.parse(fs.readFileSync('settings.json'));
 var client = new irc.Client(settings.client.server, settings.client.user, {
@@ -15,9 +16,6 @@ client.addListener('join', onJoin);
 client.addListener('notice', tryLogin);
 if (settings.client.pass)
   client.addListener('registered', checkUsername);
-
-var cb = new cleverbot(settings.cleverbot.user, settings.cleverbot.key, settings.cleverbot.session);
-cb.create(function(err, session) {});
 
 reloadBot();
 readConsole();
@@ -108,7 +106,7 @@ function onMessage(nick, to, text, message) {
           sendSettings: settings
         });
         if (reply.length)
-          sendArray(reply, obj.to, obj.sendSettings);
+          sendArray(reply, replyTo, settings);
       } catch (err) {
         var replyArray = [err, 'this error has been logged'];
         addToReportLog([err.message, message.args.splice(1).join(' ')], nick, true);
@@ -202,13 +200,10 @@ function isAdmin(nick) {
 
 function reloadBot() {
   try {
-    cb = new cleverbot(settings.cleverbot.user, settings.cleverbot.key, settings.cleverbot.session);
-    cb.create(function(err, session) {});
 
     bot = reload('./bot.js');
     bot.addToReportLog = addToReportLog;
     bot.reloadBot = reloadBot;
-    bot.cb = cb;
     bot.sendArray = sendArray;
     bot.isAdmin = isAdmin;
   } catch (e) {
