@@ -10,6 +10,7 @@ function getText(args, obj) {
   // Split into command + arguments for that command
   var comm = args.splice(0, 1)[0].substring(1);
   var reply = [];
+  obj.this = this;
 
   if (functions[comm])
     reply = functions[comm](args, obj);
@@ -83,7 +84,7 @@ function template(args, obj) {
 } */
 function alias(args, obj) {
   var reply = [];
-  if (this.isAdmin(obj.from)) {
+  if (obj.this.isAdmin(obj.from)) {
     var comm = args.splice(0, 1)[0];
     var key = args.splice(0, 1)[0];
     if (comm === 'add') {
@@ -112,9 +113,9 @@ function alias(args, obj) {
 function reload(args, obj) {
   var reply = [];
   // Check user status
-  if (this.isAdmin(obj.from)) {
+  if (obj.this.isAdmin(obj.from)) {
     // Reload bot functions
-    this.reloadBot();
+    obj.this.reloadBot();
     aliases = JSON.parse(fs.readFileSync('aliases.json'));
     reply.push('reloaded');
   }
@@ -124,7 +125,7 @@ function reload(args, obj) {
 function evaluate(args, obj) {
   var reply = [];
   // Check user status
-  if (this.isAdmin(obj.from)) {
+  if (obj.this.isAdmin(obj.from)) {
     // Evaluate input
     reply.push(eval(processText(args, obj)).toString());
   } else {
@@ -217,27 +218,6 @@ function getLmgtfyLink(args, obj) {
     return reply;
 }
 
-function getFaqLink(args, obj) {
-  var reply = [];
-  reply.push('https://www.reddit.com/r/NoMansSkyTheGame/wiki/faq ' + processText(args, obj));
-  if (reply.length)
-    return reply;
-}
-
-function getArchiveLink(args, obj) {
-  var reply = [];
-  reply.push('https://www.reddit.com/r/NoMansSkyTheGame/wiki/archive ' + processText(args, obj));
-  if (reply.length)
-    return reply;
-}
-
-function getRulesLink(args, obj) {
-  var reply = [];
-  reply.push('https://www.reddit.com/r/NoMansSkyTheGame/wiki/rules ' + processText(args, obj));
-  if (reply.length)
-    return reply;
-}
-
 function getRelease(args, obj) {
   var reply = [];
 
@@ -249,20 +229,6 @@ function getRelease(args, obj) {
     reply.push('Estimated release of No Man\'s Sky: ');
   reply.push(result);
 
-  if (reply.length)
-    return reply;
-}
-
-function getCountdownLink(args, obj) {
-  var reply = [];
-  reply.push('http://secretonline.github.io/NMS-Countdown');
-  if (reply.length)
-    return reply;
-}
-
-function getPlanetReportLink(args, obj) {
-  var reply = [];
-  reply.push('http://secretonline.github.io/NMS-Report');
   if (reply.length)
     return reply;
 }
@@ -342,20 +308,6 @@ function getMessText(args, obj) {
 function getFuckText(args, obj) {
   var reply = [];
   reply.push(flip(getSecretLatin(getTrkLatin(toTitleCase(processText(args, obj))))));
-  if (reply.length)
-    return reply;
-}
-
-function getRip(args, obj) {
-  var reply = [];
-  reply.push('rip in peace, ' + processText(args, obj));
-  if (reply.length)
-    return reply;
-}
-
-function getHundreds(args, obj) {
-  var reply = [];
-  reply.push('hundreds, if not thousands, of ' + processText(args, obj));
   if (reply.length)
     return reply;
 }
