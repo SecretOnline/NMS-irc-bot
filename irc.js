@@ -66,7 +66,7 @@ function onMessage(nick, to, text, message) {
   // Log all input for debugging purposes
   botLog(nick + ': ' + text);
 
-  if (nick === 'secret_bot')
+  if (nick === client.nick)
     return;
   if (nick === 'Gunter')
     addToGunterLog(message.args[1]);

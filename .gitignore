@@ -1,6 +1,7 @@
 node_modules/
 settings.json
 reports.json
+aliases.json
 *.bat
 *-old.*
 

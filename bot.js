@@ -392,7 +392,7 @@ function getFuckText(args, obj) {
 
 function getThanks(args, obj) {
   var reply = [];
-  if (from === 'secret_online')
+  if (obj.from === 'secret_online')
     reply.push('yeah, yeah. you created me.');
   else
     reply.push('you\'re welcome.');
@@ -621,7 +621,7 @@ var emotes = {
   'lennytable': '(╯ ͡° ͜ʖ ͡°)╯︵ ┻━┻',
   'wattable': '(╯ಠ▃ಠ)╯︵ ┻━┻',
   'fu': 'ಠ︵ಠ凸',
-  'HYPETRAIN': '/|˳˳_˳˳|[˳˳H˳˳]¬˳˳Y˳˳⌐(˳˳P˳˳)\\˳˳E˳˳/|˳˳!˳˳|',
+  'HYPETRAIN': '/|˳˳_˳˳|[˳˳H˳˳]┐˳˳Y˳˳┌(˳˳P˳˳)\\˳˳E˳˳/|˳˳!˳˳|',
   'lenny': '( ͡° ͜ʖ ͡°)',
   'lennymob': '( ͡° ͜ʖ ( ͡° ͜ʖ ( ͡° ͜ʖ ( ͡° ͜ʖ ͡°) ͜ʖ ͡°)ʖ ͡°)ʖ ͡°)',
   'lennymoney': '[̲̅$̲̅(̲̅ ͡° ͜ʖ ͡°̲̅)̲̅$̲̅]',
@@ -769,7 +769,7 @@ var flipTable = {
   //'G': '',
   //'J': '',
   //'K': '',
-  'L': '\u2510',
+  'L': '˥',
   'M': 'W',
   'P': '\u0500',
   //'Q': '',
@@ -779,13 +779,19 @@ var flipTable = {
   'V': '\u039B',
   'Y': '\u03BB',
   '（': '）',
-  '☜': '☞'
+  '☜': '☞',
+  '˳': '°',
+  '⌐': '¬',
+  '┌': '┘',
+  '┐': '└',
+  '͜': '͡',
+  'ʕ': 'ʖ'
 };
 for (var i in flipTable) {
   flipTable[flipTable[i]] = i;
 }
 
-var copyPasta = "What did you just say about me? I\'ll have you know I graduated top of my class in the NoManNauts, and I\'ve been involved in numerous secret raids on Hello Games, and I have over 300 confirmed planet sightings. I am trained in space-goat warfare and I\'m the top pilot in the entirety /r/NoMansSkyTheGame. You are nothing to me but just another goat. I will wipe you out with proc-gen tech the likes of which has never been seen before in this system, mark my words. You think you can get away with saying that to me over IRC? Think again. As we speak I am contacting my secret network of sentinels across the galaxy and your ship is being traced right now so you better prepare for the storm. The storm that wipes out the pathetic little thing you call Ictaloris Hyphus. You\'re dead, kid. I can warp anywhere, anytime, and I can kill you in over 18 quintillion ways, and thats just with my multitool. Not only am I extensively trained in multitool combat, but I have access to the entire arsenal of the Malevolent Force and I will use it to its full extent to wipe your E3 Fish off the face of the universe. If only you could have known what unholy retribution your little clever comment was about to bring down upon you, maybe you would have held your tongue. But you couldn\'t, you didn\'t, and now you\'re paying the price. I will fire plasma grenades all over you and you will explode in it. You\'re dead, space-goat.";
+var copyPasta = "What did you just say about me? I\'ll have you know I graduated top of my class in the NoManNauts, and I\'ve been involved in numerous secret raids on Hello Games, and I have over 2^64 confirmed planet sightings. I am trained in space-goat warfare and I\'m the top pilot in the entirety of /r/NoMansSkyTheGame. You are nothing to me but just another goat. I will wipe you out with proc-gen tech the likes of which has never been seen before in this system, mark my words. You think you can get away with saying that to me over IRC? Think again. As we speak I am contacting my secret network of sentinels across the galaxy and your ship is being traced right now so you better prepare for the storm. The storm that wipes out the pathetic little thing you call Ictaloris Hyphus. You\'re dead, kid. I can warp anywhere, anytime, and I can kill you in over 18 quintillion ways, and thats just with my multitool. Not only am I extensively trained in multitool combat, but I have access to the entire arsenal of the Malevolent Force and I will use it to its full extent to wipe your E3 Fish off the face of the universe. If only you could have known what unholy retribution your little clever comment was about to bring down upon you, maybe you would have held your tongue. But you couldn\'t, you didn\'t, and now you\'re paying the price. I will fire plasma grenades all over you and you will explode in it. You\'re dead, space-goat.";
 
 module.exports = {
   getText: getText,
