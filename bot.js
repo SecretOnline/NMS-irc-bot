@@ -16,7 +16,7 @@ function getText(args, obj) {
     if (typeof functions[comm] === 'function')
       reply = functions[comm](args, obj);
     else if (typeof functions[comm] === 'object')
-      reply = functions[comm].f(args, obj)
+      reply = functions[comm].f(args, obj);
   } else if (emotes[comm])
     reply.push(emotes[comm]);
   else if (aliases[comm])
@@ -73,6 +73,88 @@ function processText(words, obj) {
   }
 
   return str;
+}
+
+var helpHelp = [
+  'secret_bot help',
+  '`~help commands` - list of commands',
+  '`~help emotes` - list of emotes',
+  '`~help aliases` - list of aliases (basic commands)',
+  'bot version: something',
+  'contact secret_online if you\'re having problems'
+];
+var flipHelp = [
+  'flip',
+  'this command will flip any text upside down',
+  '(not all characters work just yet. soon(tm))',
+  'the flip command supports emote injection',
+  'example usage:',
+  '~flip example text',
+  '~flip ~dance'
+];
+var linkHelp = [
+  '`wiki`, `google`, and `lmgtfy`',
+  'these commands simply links to a page',
+  'it performs no checks to see if the link is to a valid page or not.',
+  'example usage:',
+  '~wiki no man\'s sky',
+  '~google ~lenny',
+  '~lmgtfy no man\'s sky release date'
+];
+var latinHelp = [
+  '`secret_latin`, `trk_latin`, `jaden_latin`, `ohdear_latin`, and `ohfuck_latin`',
+  'these commands will warp text',
+  '`secret_latin` swaps the first two characters of words',
+  '`trk_latin` removes all vowels and \'c\'s',
+  '`jaden_latin` Puts Things In Title Case',
+  '`ohdear_latin` does the other three in one go',
+  '`ohfuck_latin` flips `ohdear_latin`'
+];
+var rollHelp = [
+  '`roll`',
+  'have you prayed to RNGesus lately?',
+  'rolls dice for you. virtual dice',
+  '[number of dice]d[number of dots on highest face]',
+  'example usage:',
+  '~roll 4d6',
+  '~roll 3d20',
+  '~roll 2d4 4d6 3d20'
+];
+
+function getHelp(args, obj) {
+  var reply = [];
+  if (args.length === 0) {
+    reply = reply.concat(helpHelp);
+  } else {
+    if (args[0] === 'commands') {
+      var commString = "";
+      var keys = Object.keys(functions);
+      for (var i = 0; i < keys.length; i++) {
+        var key = keys[i];
+        commString += key;
+        if (typeof functions[key] === 'object')
+          if (Array.isArray(functions[key].help))
+            commString += ' *';
+        if (i !== keys.length - 1)
+          commString += ', ';
+      }
+      reply.push('list of commands');
+      reply.push('`*` denotes detailed help');
+      reply.push(commString);
+    } else if (args[0] === 'emotes') {
+      reply.push('list of emotes');
+      reply.push(Object.keys(emotes).join(', '));
+    } else if (args[0] === 'aliases') {
+      reply.push('list of aliases');
+      reply.push(Object.keys(aliases).join(', '));
+    } else if (typeof functions[args[0]] === 'object') {
+      if (functions[args[0]].help)
+        reply = reply.concat(functions[args[0]].help);
+    } else {
+      repy.push('invalid help argument');
+    }
+  }
+  return reply;
 }
 
 /**
@@ -149,13 +231,6 @@ function sayRaw(args, obj) {
 function say(args, obj) {
   var reply = [];
   reply.push(processText(args, obj));
-  if (reply.length)
-    return reply;
-}
-
-function help(args, obj) {
-  var reply = [];
-  reply = getHelp(args);
   if (reply.length)
     return reply;
 }
@@ -709,79 +784,6 @@ var flipTable = {
 for (var i in flipTable) {
   flipTable[flipTable[i]] = i;
 }
-
-var flipHelp = [
-  'flip',
-  'this command will flip any text upside down',
-  '(not all characters work just yet. soon(tm))',
-  'the flip command supports emote injection',
-  'example usage:',
-  '~flip example text',
-  '~flip ~dance'
-];
-var linkHelp = [
-  '`wiki`, `google`, and `lmgtfy`',
-  'these commands simply links to a page',
-  'it performs no checks to see if the link is to a valid page or not.',
-  'example usage:',
-  '~wiki no man\'s sky',
-  '~google ~lenny',
-  '~lmgtfy no man\'s sky release date'
-];
-var latinHelp = [
-  '`secret_latin`, `trk_latin`, `jaden_latin`, `ohdear_latin`, and `ohfuck_latin`',
-  'these commands will warp text',
-  '`secret_latin` swaps the first two characters of words',
-  '`trk_latin` removes all vowels and \'c\'s',
-  '`jaden_latin` Puts Things In Title Case',
-  '`ohdear_latin` does the other three in one go',
-  '`ohfuck_latin` flips `ohdear_latin`'
-];
-
-function getHelp(args, obj) {
-  var reply = [];
-  if (args.length === 0) {
-    reply = reply.concat(helpHelp);
-  } else {
-    if (args[0] === 'commands') {
-      var commString = "";
-      var keys = Object.keys(functions);
-      for (var i = 0; i < keys.length; i++) {
-        var key = keys[i];
-        commString += key;
-        if (typeof functions[key] === 'object')
-          if (functions[key].help)
-            commString += '*';
-        if (i !== keys.length - 1)
-          commString += ', ';
-      }
-      reply.push('list of commands');
-      reply.push('`*` denotes detailed help');
-      reply.push(commString);
-    } else if (args[0] === 'emotes') {
-      reply.push('list of emotes');
-      reply.push(Object.keys(emotes).join(', '));
-    } else if (args[0] === 'aliases') {
-      reply.push('list of aliases');
-      reply.push(Object.keys(aliases).join(', '));
-    } else if (typeof functions[args[0]] === 'object') {
-      if (functions[args[0]].help)
-        reply = reply.concat(functions[args[0]].help);
-    } else {
-      repy.push('invalid help argument');
-    }
-  }
-  return reply;
-}
-
-var helpHelp = [
-  'secret_bot help',
-  '`~help commands` - list of commands',
-  '`~help emotes` - list of emotes',
-  '`~help aliases` - list of aliases (basic commands)',
-  'bot version: something',
-  'contact secret_online if you\'re having problems'
-];
 
 var copyPasta = "What did you just say about me? I\'ll have you know I graduated top of my class in the NoManNauts, and I\'ve been involved in numerous secret raids on Hello Games, and I have over 300 confirmed planet sightings. I am trained in space-goat warfare and I\'m the top pilot in the entirety /r/NoMansSkyTheGame. You are nothing to me but just another goat. I will wipe you out with proc-gen tech the likes of which has never been seen before in this system, mark my words. You think you can get away with saying that to me over IRC? Think again. As we speak I am contacting my secret network of sentinels across the galaxy and your ship is being traced right now so you better prepare for the storm. The storm that wipes out the pathetic little thing you call Ictaloris Hyphus. You\'re dead, kid. I can warp anywhere, anytime, and I can kill you in over 18 quintillion ways, and thats just with my multitool. Not only am I extensively trained in multitool combat, but I have access to the entire arsenal of the Malevolent Force and I will use it to its full extent to wipe your E3 Fish off the face of the universe. If only you could have known what unholy retribution your little clever comment was about to bring down upon you, maybe you would have held your tongue. But you couldn\'t, you didn\'t, and now you\'re paying the price. I will fire plasma grenades all over you and you will explode in it. You\'re dead, space-goat.";
 
