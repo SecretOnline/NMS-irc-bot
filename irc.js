@@ -5,6 +5,9 @@ var cleverbot = require('cleverbot.io');
 var bot = reload('./bot.js');
 reloadBot();
 
+var cb = new cleverbot(settings.cleverbot.user, settings.cleverbot.key, settings.cleverbot.session);
+cb.create(function(err, session) {});
+
 var settings = JSON.parse(fs.readFileSync('settings.json'));
 var client = new irc.Client(settings.client.server, settings.client.user, {
   userName: 'secret_bot',
@@ -200,12 +203,15 @@ function isAdmin(nick) {
 
 function reloadBot() {
   try {
+    cb = new cleverbot(settings.cleverbot.user, settings.cleverbot.key, settings.cleverbot.session);
+    cb.create(function(err, session) {});
 
     bot = reload('./bot.js');
     bot.externalFunctions = {
       'addToReportLog': addToReportLog,
       'reloadBot': reloadBot,
-      'isAdmin': isAdmin
+      'isAdmin': isAdmin,
+      'cb': cb
     };
   } catch (e) {
     addToReportLog(['failed to reload'], 'bot', false);

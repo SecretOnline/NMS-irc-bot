@@ -455,7 +455,7 @@ function getCopyPasta(args, obj) {
 function getMeme(args, obj) {
   var reply = [];
   if (args[0] && memes[args[0]]) {
-    reply.push(getMeme(args[0]));
+    reply.push(memes[args[0]]);
   }
   if (reply.length)
     return reply;
@@ -561,7 +561,7 @@ var functions = {
   'coypasta': getCopyPasta,
   'meme': getMeme,
   'roll': getRoll,
-  //'cb': getClever
+  'cb': getClever
 };
 
 function getSecretLatin(string) {
@@ -695,12 +695,6 @@ var procedural = [
   'dream'
 ];
 
-/**
- * May-mays
- */
-function getMeme(key) {
-  return memes[key] || key;
-}
 var memes = {
   'cage': 'http://i.imgur.com/5EBfpq3.png',
   'confess': 'http://i.imgur.com/BDRyxoG.jpg',
