@@ -760,15 +760,15 @@ function getHelp(args, obj) {
       reply.push(commString);
     } else if (args[0] === 'emotes') {
       reply.push('list of emotes');
-      reply.push(emotes.join(', '));
+      reply.push(Object.keys(emotes).join(', '));
     } else if (args[0] === 'aliases') {
       reply.push('list of aliases');
-      reply.push(aliases.join(', '));
+      reply.push(Object.keys(aliases).join(', '));
     } else if (typeof functions[args[0]] === 'object') {
       if (functions[args[0]].help)
         reply = reply.concat(functions[args[0]].help);
     } else {
-      repy.push('invalid help argument')
+      repy.push('invalid help argument');
     }
   }
   return reply;
