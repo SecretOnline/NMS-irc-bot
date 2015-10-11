@@ -5,14 +5,14 @@ var cleverbot = require('cleverbot.io');
 var bot = reload('./bot.js');
 reloadBot();
 
-var cb = new cleverbot(settings.cleverbot.user, settings.cleverbot.key, settings.cleverbot.session);
-cb.create(function(err, session) {});
-
 var settings = JSON.parse(fs.readFileSync('settings.json'));
 var client = new irc.Client(settings.client.server, settings.client.user, {
   userName: 'secret_bot',
   realName: 'secret_online\'s bot'
 });
+
+var cb = new cleverbot(settings.cleverbot.user, settings.cleverbot.key, settings.cleverbot.session);
+cb.create(function(err, session) {});
 
 client.addListener('message', onMessage);
 client.addListener('join', onJoin);
@@ -71,8 +71,11 @@ function onMessage(nick, to, text, message) {
 
   if (nick === client.nick)
     return;
-  if (nick === 'Gunter')
+  if (nick === 'Gunter') {
     addToGunterLog(message.args[1]);
+    if (text.indexOf('secret_online') > -1)
+      sendArray(['hey, i know that guy'], to, {});
+  }
   var settings = {};
   if (text.indexOf('\x02') > -1) {
     text = text.replace(/[\x02]/g, '');
@@ -102,14 +105,13 @@ function onMessage(nick, to, text, message) {
     // Get text to send
     process.nextTick(function() {
       try {
-        var reply = bot.getText(argArray, {
+        bot.getText(argArray, {
           from: nick,
           to: replyTo,
           callback: sendArray,
-          sendSettings: settings
-        });
-        if (reply.length)
-          sendArray(reply, replyTo, settings);
+          sendSettings: settings,
+          perm: getPermLevel(nick)
+        }, true);
       } catch (err) {
         var replyArray = [err, 'this error has been logged'];
         addToReportLog([err.message, message.args.splice(1).join(' ')], nick, true);
@@ -199,6 +201,22 @@ function isAdmin(nick) {
     }
   });
   return ret;
+}
+
+function getPermLevel(nick) {
+  if (isAdmin(nick))
+    return 10;
+  var fs = require('fs');
+  var perms;
+  try {
+    perms = JSON.parse(fs.readFileSync('perms.json'));
+  } catch (err) {
+    reports = {};
+  }
+  if (perms[nick])
+    return perms[nick];
+  else
+    return 0;
 }
 
 function reloadBot() {

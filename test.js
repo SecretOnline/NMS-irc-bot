@@ -36,14 +36,12 @@ function readConsole() {
   rl.prompt();
   rl.on('line', function(line) {
     var argArray = line.split(' ');
-    var reply = bot.getText(argArray, {
+    bot.getText(argArray, {
       from: 'nick',
       to: 'replyTo',
       callback: sendArray,
       sendSettings: {}
-    });
-    if (reply.length)
-      sendArray(reply, 'replyTo', {});
+    }, true);
     rl.prompt();
   }).on('close', function() {
     process.exit(0);

@@ -6,7 +6,7 @@ var aliases = JSON.parse(fs.readFileSync('aliases.json'));
 /**
  * Returns an array of strings to send
  */
-function getText(args, obj) {
+function getText(args, obj, doCallback) {
   // Split into command + arguments for that command
   var comm = args.splice(0, 1)[0].substring(1);
   var reply = [];
@@ -16,16 +16,31 @@ function getText(args, obj) {
     if (typeof functions[comm] === 'function')
       reply = functions[comm](args, obj);
     else if (typeof functions[comm] === 'object')
-      reply = functions[comm].f(args, obj);
+      if (functions[comm].perm && functions[comm].perm > obj.perm)
+        reply.push('insufficient permissions');
+      else {
+        if (functions[comm].async) {
+          functions[comm].f(args, obj);
+          return;
+        } else
+          reply = functions[comm].f(args, obj);
+      }
   } else if (emotes[comm])
     reply.push(emotes[comm]);
-  else if (aliases[comm])
-    reply.push(aliases[comm] + ' ' + processText(args, obj));
-  else {
+  else if (aliases[comm]) {
+    if (aliases[comm].indexOf('{args}') > -1)
+      reply.push(aliases[comm].replace(/{args}/g, processText(args, obj)));
+    else
+      reply.push(aliases[comm] + ' ' + processText(args, obj));
+  } else {
     reply.push('invalid command \'' + comm + '\'');
   }
 
-  return reply;
+  if (doCallback) {
+    obj.callback(reply, obj.to, obj.sendSettings);
+    return;
+  } else
+    return reply;
 }
 
 function getWelcome(nick) {
@@ -120,6 +135,13 @@ var rollHelp = [
   '~roll 3d20',
   '~roll 2d4 4d6 3d20'
 ];
+var cbHelp = [
+  '`cb`',
+  'this bot has basic cleverbot functions',
+  'they probably don\'t work, though',
+  'example usage:',
+  '~cb hello'
+];
 
 function getHelp(args, obj) {
   var reply = [];
@@ -131,9 +153,10 @@ function getHelp(args, obj) {
       var keys = Object.keys(functions);
       for (var i = 0; i < keys.length; i++) {
         var key = keys[i];
-        commString += key;
+        if (!(typeof functions[key] === 'object' && functions[key].perm && functions[key].perm > obj.perm))
+          commString += key;
         if (typeof functions[key] === 'object')
-          if (Array.isArray(functions[key].help))
+          if (functions[key].help)
             commString += ' *';
         if (i !== keys.length - 1)
           commString += ', ';
@@ -151,7 +174,8 @@ function getHelp(args, obj) {
       if (functions[args[0]].help)
         reply = reply.concat(functions[args[0]].help);
     } else {
-      repy.push('invalid help argument');
+      repy.push('there\'s no help for ' + args[0] + ' yet');
+      repy.push('you should yell at secret_online about it');
     }
   }
   return reply;
@@ -169,54 +193,42 @@ function template(args, obj) {
 } */
 function alias(args, obj) {
   var reply = [];
-  if (obj.f.isAdmin(obj.from)) {
-    var comm = args.splice(0, 1)[0];
-    var key = args.splice(0, 1)[0];
-    if (comm === 'add') {
-      var res = processText(args, obj);
-      if (aliases[key])
-        reply.push('alias already exists');
-      else {
-        aliases[key] = res;
-        reply.push('alias \'' + key + '\' added');
-      }
-    } else if (comm === 'remove') {
-      if (aliases[key]) {
-        delete aliases[key];
-        reply.push('alias \'' + key + '\' removed');
-      } else
-        reply.push('alias doesn\'t exist');
+  var comm = args.splice(0, 1)[0];
+  var key = args.splice(0, 1)[0];
+  if (comm === 'add') {
+    var res = processText(args, obj);
+    if (aliases[key])
+      reply.push('alias already exists');
+    else {
+      aliases[key] = res;
+      reply.push('alias \'' + key + '\' added');
     }
+  } else if (comm === 'remove') {
+    if (aliases[key]) {
+      delete aliases[key];
+      reply.push('alias \'' + key + '\' removed');
+    } else
+      reply.push('alias doesn\'t exist');
+  }
 
-    fs.writeFileSync('aliases.json', JSON.stringify(aliases, null, 2));
-  } else
-    reply.push('you do not have permission to ');
+  fs.writeFileSync('aliases.json', JSON.stringify(aliases, null, 2));
 
   return reply;
 }
 
 function reload(args, obj) {
   var reply = [];
-  // Check user status
-  if (obj.f.isAdmin(obj.from)) {
-    // Reload bot functions
-    obj.f.reloadBot();
-    aliases = JSON.parse(fs.readFileSync('aliases.json'));
-    reply.push('reloaded');
-  }
+  // Reload bot functions
+  obj.f.reloadBot();
+  aliases = JSON.parse(fs.readFileSync('aliases.json'));
+  reply.push('reloaded');
   return reply;
 }
 
 function evaluate(args, obj) {
   var reply = [];
-  // Check user status
-  if (obj.f.isAdmin(obj.from)) {
-    // Evaluate input
-    reply.push(eval(processText(args, obj)).toString());
-  } else {
-    // User not allowed to use ~eval
-    reply.push('due to the nature of this command, you are not able to use it.');
-  }
+  // Evaluate input
+  reply.push(eval(processText(args, obj)).toString());
   if (reply.length)
     return reply;
 }
@@ -321,7 +333,7 @@ function getInceptionNoise(args, obj) {
 
 function makeErrorReport(args, obj) {
   var reply = [];
-  this.addToReportLog([processText(args, obj)], obj.from);
+  obj.f.addToReportLog([processText(args, obj)], obj.from);
   reply.push('your error has been logged. Thanks ' + obj.from);
   if (reply.length)
     return reply;
@@ -392,10 +404,16 @@ function getFuckText(args, obj) {
 
 function getThanks(args, obj) {
   var reply = [];
-  if (obj.from === 'secret_online')
-    reply.push('yeah, yeah. you created me.');
+  var text = processText(args, obj);
+  if (text === '')
+    if (obj.from === 'secret_online')
+      reply.push('yeah, yeah. you created me.');
+    else
+      reply.push('you\'re welcome.');
+  else if (text === 'mr skeletal')
+    reply.push('doot doot');
   else
-    reply.push('you\'re welcome.');
+    reply.push('thank you ' + text);
   if (reply.length)
     return reply;
 }
@@ -463,7 +481,7 @@ function getMeme(args, obj) {
 
 function getClever(args, obj) {
   var reply = [];
-  this.cb.ask(processText(args, obj), function(err, response) {
+  obj.f.cb.ask(processText(args, obj), function(err, response) {
     if (err) {
       reply.push('something went wrong with cleverbot');
       reply.push('message: ' + response);
@@ -503,8 +521,14 @@ function getRoll(args, obj) {
 // Big functions dictionary
 var functions = {
   'alias': alias,
-  'reload': reload,
-  'eval': evaluate,
+  'reload': {
+    f: reload,
+    perm: 10
+  },
+  'eval': {
+    f: evaluate,
+    perm: 10
+  },
   'say': say,
   'raw': sayRaw,
   'help': {
@@ -558,10 +582,18 @@ var functions = {
   'BANHAMMER': getBan,
   'respawn': getRespawn,
   'greet': getGreeting,
-  'coypasta': getCopyPasta,
+  'coypasta': {
+    f: getCopyPasta,
+    perm: 1
+  },
   'meme': getMeme,
   'roll': getRoll,
-  'cb': getClever
+  'cb': {
+    f: getClever,
+    help: cbHelp,
+    async: 1,
+    perm: 1
+  }
 };
 
 function getSecretLatin(string) {
