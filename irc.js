@@ -211,7 +211,7 @@ function getPermLevel(nick) {
   try {
     perms = JSON.parse(fs.readFileSync('perms.json'));
   } catch (err) {
-    reports = {};
+    perms = {};
   }
   if (perms[nick])
     return perms[nick];

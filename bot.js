@@ -90,6 +90,20 @@ function processText(words, obj) {
   return str;
 }
 
+function processPerms(args, obj) {
+  var reply = [];
+  var perms;
+  try {
+    perms = JSON.parse(fs.readFileSync('perms.json'));
+  } catch (err) {
+    perms = {};
+  }
+  perms[args[0]] = args[1];
+  fs.writeFileSync('perms.json', JSON.stringify(perms, null, 2));
+  reply.push(args[0] + '\'s permission level set to ' + args[1]);
+  return reply;
+}
+
 var helpHelp = [
   'secret_bot help',
   '`~help commands` - list of commands',
@@ -153,13 +167,14 @@ function getHelp(args, obj) {
       var keys = Object.keys(functions);
       for (var i = 0; i < keys.length; i++) {
         var key = keys[i];
-        if (!(typeof functions[key] === 'object' && functions[key].perm && functions[key].perm > obj.perm))
+        if (!(typeof functions[key] === 'object' && functions[key].perm && functions[key].perm > obj.perm)) {
           commString += key;
-        if (typeof functions[key] === 'object')
-          if (functions[key].help)
-            commString += ' *';
-        if (i !== keys.length - 1)
-          commString += ', ';
+          if (typeof functions[key] === 'object')
+            if (functions[key].help)
+              commString += ' *';
+          if (i !== keys.length - 1)
+            commString += ', ';
+        }
       }
       reply.push('list of commands');
       reply.push('`*` denotes detailed help');
@@ -520,7 +535,14 @@ function getRoll(args, obj) {
 
 // Big functions dictionary
 var functions = {
-  'alias': alias,
+  'alias': {
+    f: alias,
+    perm: 3
+  },
+  'setlevel': {
+    f: processPerms,
+    perm: 10
+  },
   'reload': {
     f: reload,
     perm: 10
@@ -584,7 +606,7 @@ var functions = {
   'greet': getGreeting,
   'coypasta': {
     f: getCopyPasta,
-    perm: 1
+    perm: 2
   },
   'meme': getMeme,
   'roll': getRoll,
