@@ -122,13 +122,15 @@ var flipHelp = [
   '~flip ~dance'
 ];
 var linkHelp = [
-  '`wiki`, `google`, and `lmgtfy`',
-  'these commands simply links to a page',
+  '`wiki`, `google`, `search`, and `lmgtfy`',
+  'these commands simply link to a page',
+  'search searches the subreddit for posts',
   'it performs no checks to see if the link is to a valid page or not.',
   'example usage:',
   '~wiki no man\'s sky',
   '~google ~lenny',
-  '~lmgtfy no man\'s sky release date'
+  '~lmgtfy no man\'s sky release date',
+  '~search release date'
 ];
 var latinHelp = [
   '`secret_latin`, `trk_latin`, `jaden_latin`, `ohdear_latin`, and `ohfuck_latin`',
@@ -585,6 +587,10 @@ var functions = {
   },
   'lmgtfy': {
     f: getLmgtfyLink,
+    help: linkHelp
+  },
+  'search': {
+    f: getSearchLink,
     help: linkHelp
   },
   'release': getRelease,
