@@ -26,7 +26,7 @@ function getText(args, obj, doCallback) {
           reply = functions[comm].f(args, obj);
       }
   } else if (emotes[comm])
-    reply.push(emotes[comm]) + ' ' + processText(args, obj);
+    reply.push(emotes[comm] + ' ' + processText(args, obj));
   else if (aliases[comm]) {
     if (aliases[comm].indexOf('{args}') > -1)
       reply.push(aliases[comm].replace(/{args}/g, processText(args, obj)));
