@@ -323,6 +323,19 @@ function getLmgtfyLink(args, obj) {
     return reply;
 }
 
+function getSearchLink(args, obj) {
+  var reply = [];
+  var url = 'https://www.reddit.com/r/NoMansSkyTheGame/';
+  if (args.length > 0)
+    url += 'search?sort=new&restrict_sr=on&t=all&q=' + processText(args, obj);
+  url = url.replace(/ /g, '+');
+  url = encodeURI(url);
+  url = url.replace(/'/g, '%27');
+  reply.push(url);
+  if (reply.length)
+    return reply;
+}
+
 function getRelease(args, obj) {
   var reply = [];
 

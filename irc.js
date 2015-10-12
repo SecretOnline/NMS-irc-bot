@@ -73,7 +73,7 @@ function onMessage(nick, to, text, message) {
     return;
   if (nick === 'Gunter') {
     addToGunterLog(message.args[1]);
-    if (text.indexOf('secret_online') > -1)
+    if (text.match(/NoMansSkyTheGame.*secret_online.*/))
       sendArray(['hey, i know that guy'], to, {});
   }
   var settings = {};
