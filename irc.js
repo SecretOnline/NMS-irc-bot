@@ -109,13 +109,14 @@ function onMessage(nick, to, text, message) {
           from: nick,
           to: replyTo,
           callback: sendArray,
+          callbackNotice: noticeArray,
           sendSettings: settings,
           perm: getPermLevel(nick)
         }, true);
       } catch (err) {
         var replyArray = [err, 'this error has been logged'];
         addToReportLog([err.message, message.args.splice(1).join(' ')], nick, true);
-        sendArray(replyArray, nick, settings);
+        noticeArray(replyArray, nick, settings);
       }
     });
   }
@@ -134,6 +135,22 @@ function sendArray(arr, replyTo, settings) {
         reply = '\x1F' + reply;
     }
     client.say(replyTo, reply);
+  });
+}
+
+function noticeArray(arr, replyTo, settings) {
+  // Send array one item at a time
+  arr.forEach(function(reply) {
+    botLog(reply);
+    if (settings) {
+      if (settings.bold)
+        reply = '\x02' + reply;
+      if (settings.italics)
+        reply = '\x1D' + reply;
+      if (settings.underline)
+        reply = '\x1F' + reply;
+    }
+    client.notice(replyTo, reply);
   });
 }
 

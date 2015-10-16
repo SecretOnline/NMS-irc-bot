@@ -10,20 +10,25 @@ function getText(args, obj, doCallback) {
   // Split into command + arguments for that command
   var comm = args.splice(0, 1)[0].substring(1);
   var reply = [];
+  var replyType = 'normal';
   obj.f = this.externalFunctions;
 
   if (functions[comm]) {
     if (typeof functions[comm] === 'function')
       reply = functions[comm](args, obj);
     else if (typeof functions[comm] === 'object')
-      if (functions[comm].perm && functions[comm].perm > obj.perm)
+      if (functions[comm].perm && functions[comm].perm > obj.perm) {
         reply.push('insufficient permissions');
-      else {
+        replyType = 'notice';
+      } else {
         if (functions[comm].async) {
           functions[comm].f(args, obj);
           return;
-        } else
+        } else {
+          if (functions[comm].replyType)
+            replyType = functions[comm].replyType;
           reply = functions[comm].f(args, obj);
+        }
       }
   } else if (emotes[comm])
     reply.push(emotes[comm] + ' ' + processText(args, obj));
@@ -34,10 +39,14 @@ function getText(args, obj, doCallback) {
       reply.push(aliases[comm] + ' ' + processText(args, obj));
   } else {
     reply.push('invalid command \'' + comm + '\'');
+    replyType = 'notice';
   }
 
   if (doCallback) {
-    obj.callback(reply, obj.to, obj.sendSettings);
+    if (replyType === 'normal')
+      obj.callback(reply, obj.to, obj.sendSettings);
+    else if (replyType === 'notice')
+      obj.callbackNotice(reply, obj.from, obj.sendSettings);
     return;
   } else
     return reply;
@@ -62,7 +71,7 @@ function getWelcome(nick) {
   } else if (nick === 'Toofifty') {
     replyArray.push('too, atlas is broke again... :P');
   } else if (nick === 'Snappin') {
-    replyArray.push('hi snappin, \'~hype train\'');
+    replyArray.push('hi snappin, \'~realbest ~hype train\'');
   }
   return replyArray;
 }
@@ -560,7 +569,8 @@ var functions = {
   },
   'reload': {
     f: reload,
-    perm: 10
+    perm: 10,
+    replyType: 'notice'
   },
   'eval': {
     f: evaluate,
@@ -570,7 +580,8 @@ var functions = {
   'raw': sayRaw,
   'help': {
     f: getHelp,
-    help: helpHelp
+    help: helpHelp,
+    replyType: 'notice'
   },
   'source': getSource,
   'flip': {
@@ -680,6 +691,7 @@ var emotes = {
   'dongers': 'ヽ༼ຈل͜ຈ༽ﾉ',
   'dongers?': '┌༼◉ل͟◉༽┐',
   'dongersmob': 'ヽ༼ຈل͜ຈヽ༼ຈل͜ຈヽ༼ຈل͜ຈヽ༼ຈل͜ຈ༽ﾉل͜ຈ༽ﾉل͜ຈ༽ﾉل͜ຈ༽ﾉ',
+  'dongersmoney': '[̲̅$̲̅(̲̅ヽ̲̅༼̲̅ຈ̲̅ل͜ຈ̲̅༽̲̅ﾉ̲̅)̲̅$̲̅]',
   'dongerswall': '┬┴┬┴┤ヽ༼ຈل͜├┬┴┬┴',
   'fliptable': '(╯°□°)╯︵ ┻━┻',
   'FLIPTABLE': '(ノಠ益ಠ)ノ彡┻━┻',
