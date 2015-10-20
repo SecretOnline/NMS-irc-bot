@@ -84,6 +84,17 @@ function processText(words, obj) {
     words.splice(retIndex);
   }
 
+  var breakIndex = words.indexOf('~break');
+  if (breakIndex > -1) {
+
+    var second = words.splice(breakIndex + 1, words.length); // second arg doesn't matter, as it'll just take all the end elements
+    words.splice(breakIndex, 1);
+
+    str = processText(words, obj) + ' ' + processText(second, obj);
+
+    return str;
+  }
+
   for (var i = 0; i < words.length; i++) {
     // Add a space between words
     if (i > 0)
@@ -179,6 +190,14 @@ var returnHelp = [
   'example usage:',
   '~flip this text will be flipped ~return this text won\'t be output',
   '~say ~woo ~return ~woo (this will output `\\o/`, as the `~woo` after ~return is ignored)'
+];
+var breakHelp = [
+  '`break`',
+  'this isn\'t a normal function',
+  '`~break` will stop the current command\'s processing,',
+  'but unlike `~return`, the bot will continue along the line',
+  'example usage:',
+  '~flip this text will be flipped ~break this text won\'t be flipped',
 ];
 
 function getHelp(args, obj) {
@@ -577,6 +596,13 @@ function getReturn(args, obj) {
     return reply;
 }
 
+function getBreak(args, obj) {
+  var reply = [];
+  reply.push('type `~help break` for proper usage');
+  if (reply.length)
+    return reply;
+}
+
 // Big functions dictionary
 var functions = {
   'alias': {
@@ -601,6 +627,11 @@ var functions = {
   'return': {
     f: getReturn,
     help: returnHelp,
+    replyType: 'notice'
+  },
+  'break': {
+    f: getBreak,
+    help: breakHelp,
     replyType: 'notice'
   },
   'help': {
@@ -659,7 +690,7 @@ var functions = {
   'BANHAMMER': getBan,
   'respawn': getRespawn,
   'greet': getGreeting,
-  'coypasta': {
+  'copypasta': {
     f: getCopyPasta,
     perm: 2
   },
