@@ -29,10 +29,11 @@ function sendArray(arr, replyTo, settings) {
   });
 }
 
+
 function readConsole() {
   var readline = require('readline');
   var rl = readline.createInterface(process.stdin, process.stdout);
-  rl.setPrompt('');
+  rl.setPrompt('> ');
   rl.prompt();
   rl.on('line', function(line) {
     var argArray = line.split(' ');
@@ -40,6 +41,7 @@ function readConsole() {
       from: 'nick',
       to: 'replyTo',
       callback: sendArray,
+      callbackNotice: sendArray,
       sendSettings: {}
     }, true);
     rl.prompt();

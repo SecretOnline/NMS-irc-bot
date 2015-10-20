@@ -79,6 +79,11 @@ function getWelcome(nick) {
 function processText(words, obj) {
   var str = '';
 
+  var retIndex = words.indexOf('~return');
+  if (retIndex > -1) {
+    words.splice(retIndex);
+  }
+
   for (var i = 0; i < words.length; i++) {
     // Add a space between words
     if (i > 0)
@@ -166,6 +171,14 @@ var cbHelp = [
   'they probably don\'t work, though',
   'example usage:',
   '~cb hello'
+];
+var returnHelp = [
+  '`return`',
+  'this isn\'t a function itself',
+  'instead it will stop the bot from reading anything past that point',
+  'example usage:',
+  '~flip this text will be flipped ~return this text won\'t be output',
+  '~say ~woo ~return ~woo (this will output `\\o/`, as the `~woo` after ~return is ignored)'
 ];
 
 function getHelp(args, obj) {
@@ -557,6 +570,13 @@ function getRoll(args, obj) {
     return reply;
 }
 
+function getReturn(args, obj) {
+  var reply = [];
+  reply.push('type `~help return` for proper usage');
+  if (reply.length)
+    return reply;
+}
+
 // Big functions dictionary
 var functions = {
   'alias': {
@@ -578,6 +598,11 @@ var functions = {
   },
   'say': say,
   'raw': sayRaw,
+  'return': {
+    f: getReturn,
+    help: returnHelp,
+    replyType: 'notice'
+  },
   'help': {
     f: getHelp,
     help: helpHelp,
