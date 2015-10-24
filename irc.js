@@ -11,9 +11,6 @@ var client = new irc.Client(settings.client.server, settings.client.user, {
   realName: 'secret_online\'s bot'
 });
 
-var cb = new cleverbot(settings.cleverbot.user, settings.cleverbot.key, settings.cleverbot.session);
-cb.create(function(err, session) {});
-
 client.addListener('message', onMessage);
 client.addListener('join', onJoin);
 client.addListener('notice', tryLogin);
@@ -246,7 +243,7 @@ function reloadBot() {
       'addToReportLog': addToReportLog,
       'reloadBot': reloadBot,
       'isAdmin': isAdmin,
-      'cb': cb
+      'cb': settings.cleverbot
     };
   } catch (e) {
     addToReportLog(['failed to reload'], 'bot', false);

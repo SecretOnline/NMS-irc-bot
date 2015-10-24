@@ -10,8 +10,10 @@ function reloadBot() {
 
     bot = reload('./bot.js');
     bot.externalFunctions = {
+      //'addToReportLog': addToReportLog,
       'reloadBot': reloadBot,
-      'isAdmin': isAdmin
+      'isAdmin': isAdmin,
+      'cb': settings.cleverbot
     };
   } catch (e) {
     addToReportLog(['failed to reload'], 'bot', false);

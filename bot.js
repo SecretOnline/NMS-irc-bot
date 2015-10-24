@@ -67,11 +67,13 @@ function getWelcome(nick) {
   } else if (nick === 'Alvv') {
     replyArray.push('it\'s alvv! put your hands up \\o/');
   } else if (nick === 'trkmstrwggy' || nick === 'trkmstrwggy_mbl') {
-    replyArray.push('and here we see the wild trk in its native habitat');
+    replyArray.push('wlm bak t th hnnl, trk!');
   } else if (nick === 'Toofifty') {
     replyArray.push('too, atlas is broke again... :P');
   } else if (nick === 'Snappin') {
     replyArray.push('hi snappin, \'~realbest ~hype train\'');
+  } else if (nick === 'StuartFulcher') {
+    replyArray.push('if you hadn\'t put so much pressure on me, i might have made a greeting for you');
   }
   return replyArray;
 }
@@ -158,11 +160,12 @@ var linkHelp = [
   '~search release date'
 ];
 var latinHelp = [
-  '`secret_latin`, `trk_latin`, `jaden_latin`, `ohdear_latin`, and `ohfuck_latin`',
+  '`secret_latin`, `trk_latin`, `jaden_latin`, `alvv_latin`, `ohdear_latin`, and `ohfuck_latin`',
   'these commands will warp text',
   '`secret_latin` swaps the first two characters of words',
   '`trk_latin` removes all vowels and \'c\'s',
   '`jaden_latin` Puts Things In Title Case',
+  '`alvv_latin` replaces a few words with \'alvv\'',
   '`ohdear_latin` does the other three in one go',
   '`ohfuck_latin` flips `ohdear_latin`'
 ];
@@ -205,7 +208,12 @@ function getHelp(args, obj) {
   if (args.length === 0) {
     reply = reply.concat(helpHelp);
   } else {
-    if (args[0] === 'commands') {
+    if (args[0] === 'all') {
+      reply.push('all help');
+      reply = reply.concat(getHelp(['commands'], obj));
+      reply = reply.concat(getHelp(['aliases'], obj));
+      reply = reply.concat(getHelp(['emotes'], obj));
+    } else if (args[0] === 'commands') {
       var commString = "";
       var keys = Object.keys(functions);
       for (var i = 0; i < keys.length; i++) {
@@ -232,8 +240,8 @@ function getHelp(args, obj) {
       if (functions[args[0]].help)
         reply = reply.concat(functions[args[0]].help);
     } else {
-      repy.push('there\'s no help for ' + args[0] + ' yet');
-      repy.push('you should yell at secret_online about it');
+      reply.push('there\'s no help for ' + args[0] + ' yet');
+      reply.push('you should yell at secret_online about it');
     }
   }
   return reply;
@@ -333,6 +341,19 @@ function getWikiLink(args, obj) {
   else
     url += 'Main_Page';
   url = url.replace(/ /g, '_');
+  url = encodeURI(url);
+  url = url.replace(/'/g, '%27');
+  reply.push(url);
+  if (reply.length)
+    return reply;
+}
+
+function getYtLink(args, obj) {
+  var reply = [];
+  var url = 'https://www.youtube.com/';
+  if (args.length > 0)
+    url += 'results?search_query=' + processText(args, obj);
+  url = url.replace(/ /g, '+');
   url = encodeURI(url);
   url = url.replace(/'/g, '%27');
   reply.push(url);
@@ -459,6 +480,14 @@ function getJadenText(args, obj) {
     return reply;
 }
 
+function getAlvvText(args, obj) {
+  var reply = [];
+  reply.push(getAlvvLatin(processText(args, obj)));
+  //reply.push('nope');
+  if (reply.length)
+    return reply;
+}
+
 function getMessText(args, obj) {
   var reply = [];
   reply.push(getSecretLatin(getTrkLatin(toTitleCase(processText(args, obj)))));
@@ -552,7 +581,61 @@ function getMeme(args, obj) {
 
 function getClever(args, obj) {
   var reply = [];
-  obj.f.cb.ask(processText(args, obj), function(err, response) {
+  var res = '';
+
+  // var https = require('https');
+  // var querystring = require('querystring');
+  //
+  // var txt = processText(args, obj);
+  //
+  // var postData = querystring.stringify({
+  //   user: obj.f.cb.user,
+  //   key: obj.f.cb.key,
+  //   nick: obj.f.cb.session,
+  //   text: txt
+  // });
+  //
+  // var options = {
+  //   hostname: 'cleverbot.io',
+  //   port: 80,
+  //   path: '/1.0/ask',
+  //   method: 'POST',
+  //   headers: {
+  //     //'Content-Type': 'application/x-www-form-urlencoded',
+  //     //'Content-Length': Buffer.byteLength(postData)
+  //   }
+  // };
+  //
+  // var req = https.request(options, function(res) {
+  //   res.setEncoding('utf8');
+  //   res.on('data', function(chunk) {
+  //     res += chunk;
+  //   });
+  //   res.on('end', function() {
+  //     var cbReply = JSON.parse(res);
+  //     if (cbReply.status == 'success')
+  //       reply.push(cbReply.response);
+  //     else {
+  //       reply.push('error: ' + cbReply.status);
+  //     }
+  //     obj.callback(reply, obj.to, obj.sendSettings);
+  //   });
+  // });
+  //
+  // req.on('error', function(e) {
+  //   reply.push('error with cleverbot: ' + e);
+  //   obj.callback(reply, obj.to, obj.sendSettings);
+  // });
+  //
+  // // write data to request body
+  // req.write(postData);
+  // req.end();
+
+  var cleverbot = require('cleverbot.io');
+  cb = new cleverbot(obj.f.cb.user, obj.f.cb.key);
+  cb.setNick(obj.f.cb.session);
+
+  cb.ask(processText(args, obj), function(err, response) {
     if (err) {
       reply.push('something went wrong with cleverbot');
       reply.push('message: ' + response);
@@ -561,8 +644,6 @@ function getClever(args, obj) {
     }
     obj.callback(reply, obj.to, obj.sendSettings);
   });
-  if (reply.length)
-    return reply;
 }
 
 function getRoll(args, obj) {
@@ -677,6 +758,10 @@ var functions = {
     f: getJadenText,
     help: latinHelp
   },
+  'alvv_latin': {
+    f: getAlvvText,
+    help: latinHelp
+  },
   'ohdear_latin': {
     f: getMessText,
     help: latinHelp
@@ -703,6 +788,35 @@ var functions = {
     perm: 1
   }
 };
+
+function getAlvvLatin(string) {
+  var words = string.split(' ');
+  for (var i = 0; i < words.length; i++) {
+    if (words[i].length > 3) {
+      if (words[i].indexOf('ing') === words[i].length - 3)
+        words[i] = 'alvving';
+      else if (words[i].indexOf('ed') === words[i].length - 2)
+        words[i] = 'alvved';
+      else if (words[i].indexOf('er') === words[i].length - 2)
+        words[i] = 'alvver';
+      else if (words[i].indexOf('n\'t') === words[i].length - 3)
+        words[i] = 'alvvn\'t';
+      else if (words[i].indexOf('nt') === words[i].length - 2)
+        words[i] = 'alvvnt';
+      else if (words[i].indexOf('\'s') === words[i].length - 2)
+        words[i] = 'alvv\'s';
+      else if (words[i].indexOf('es') === words[i].length - 2)
+        words[i] = 'alvves';
+      else if (words[i].indexOf('s') === words[i].length - 1)
+        words[i] = 'alvvs';
+      else if (words[i].indexOf('y') === words[i].length - 1)
+        words[i] = 'alvvy';
+      else
+        words[i] = 'alvv';
+    }
+  }
+  return words.join(' ');
+}
 
 function getSecretLatin(string) {
   var words = string.split(' ');
