@@ -73,7 +73,7 @@ function getWelcome(nick) {
   } else if (nick === 'Snappin') {
     replyArray.push('hi snappin, \'~realbest ~hype train\'');
   } else if (nick === 'StuartFulcher') {
-    replyArray.push('if you hadn\'t put so much pressure on me, i might have made a greeting for you');
+    replyArray.push('an awful greeting');
   }
   return replyArray;
 }
@@ -400,10 +400,23 @@ function getSearchLink(args, obj) {
     return reply;
 }
 
+function getInfoLink(args, obj) {
+  var reply = [];
+  var url = 'http://secretonline.github.io/NMS-Info/';
+  if (args.length > 0)
+    url += '?search=' + processText(args, obj);
+  url = url.replace(/ /g, '+');
+  url = encodeURI(url);
+  url = url.replace(/'/g, '%27');
+  reply.push(url);
+  if (reply.length)
+    return reply;
+}
+
 function getRelease(args, obj) {
   var reply = [];
 
-  var result = 'It\'s a secret™';
+  var result = 'June™';
 
   if (args.length) {
     reply.push('Estimated release of ' + processText(args, obj) + ':');
@@ -741,6 +754,10 @@ var functions = {
     f: getSearchLink,
     help: linkHelp
   },
+  'info': {
+    f: getInfoLink,
+    help: linkHelp
+  },
   'release': getRelease,
   'inception': getInceptionNoise,
   'report': makeErrorReport,
@@ -883,6 +900,7 @@ var emotes = {
   'lennywall': '┬┴┬┴┤( ͡° ͜ʖ├┬┴┬┴',
   'lennywink': '( ͡~ ͜ʖ ͡°)',
   'lenny?': '( ͠° ͟ʖ ͡°)',
+  'nyan': '≈≈≈≈≈≈≈≈≈≈≈| ^･ω･^|',
   'orly': '﴾͡๏̯͡๏﴿ O\'RLY?',
   'rage': 'ლ(ಠ益ಠლ)',
   'robot': '╘[◉﹃◉]╕',
