@@ -1,9 +1,6 @@
 var irc = require('irc');
 var fs = require('fs');
-var reload = require('require-reload')(require);
-var cleverbot = require('cleverbot.io');
-var bot = reload('./bot.js');
-reloadBot();
+var https = require('https');
 
 var settings = JSON.parse(fs.readFileSync('settings.json'));
 var client = new irc.Client(settings.client.server, settings.client.user, {
@@ -12,13 +9,9 @@ var client = new irc.Client(settings.client.server, settings.client.user, {
 });
 
 client.addListener('message', onMessage);
-client.addListener('join', onJoin);
 client.addListener('notice', tryLogin);
 if (settings.client.pass)
   client.addListener('registered', checkUsername);
-
-reloadBot();
-readConsole();
 
 process.on('beforeExit', function() {
   client.disconnect('well, we\'re OUT of cake');
@@ -42,7 +35,7 @@ function checkUsername(message) {
  */
 function tryLogin(nick, to, text, message) {
   try {
-    botLog(nick + ' ' + message.args.join(' '));
+    console.log(nick + ' ' + message.args.join(' '));
     // Log in once NickSev sends the right messages
     if (nick === 'NickServ' && message.args.join(' ').match(/This nickname is registered and protected\./)) {
       client.say('nickserv', 'identify ' + settings.client.pass);
@@ -55,7 +48,7 @@ function tryLogin(nick, to, text, message) {
       client.removeListener('notice', tryLogin);
     }
   } catch (err) {
-    botLog(err);
+    console.error(err);
   }
 }
 
@@ -63,217 +56,54 @@ function tryLogin(nick, to, text, message) {
  * To do when bot recieves a message
  */
 function onMessage(nick, to, text, message) {
-  // Log all input for debugging purposes
-  botLog(nick + ': ' + text);
-
   if (nick === client.nick)
     return;
-  if (nick === 'Gunter') {
-    addToGunterLog(message.args[1]);
-    if (text.match(/NoMansSkyTheGame.*secret_online.*/))
-      sendArray(['hey, i know that guy'], to, {});
+
+  var forceNotice = true;
+
+  function send(obj) {
+    if (obj.status === 'success') {
+      obj.data.forEach(function(item) {
+        console.log(item);
+        if (obj.private) {
+          client.notice(nick, item);
+        } else {
+          client.say(to, item);
+        }
+      });
+    }
   }
-  var settings = {};
-  if (text.indexOf('\x02') > -1) {
-    text = text.replace(/[\x02]/g, '');
-    settings.bold = true;
-  }
-  if (text.indexOf('\x1D') > -1) {
-    text = text.replace(/[\x1D]/g, '');
-    settings.italics = true;
-  }
-  if (text.indexOf('\x1F') > -1) {
-    text = text.replace(/[\x1F]/g, '');
-    settings.underline = true;
-  }
+
   // Only operate when ` or ~ is the first character
   if (text.charAt(0) === '`' || text.charAt(0) === '~') {
-    // By default, reply to user
-    var replyTo = nick;
     // If using ~ from a channel, send back to a channel
     if (text.charAt(0) === '~' && to.charAt(0) === '#')
-      replyTo = to;
-    // Split into command + array of arguments
-    var argArray = text.split(' ');
-    var comm = argArray[0].substring(1);
-    // Send all help back to the user, not channel
-    if (comm === 'help' || comm === 'report')
-      replyTo = nick;
-    // Get text to send
-    process.nextTick(function() {
-      try {
-        bot.getText(argArray, {
-          from: nick,
-          to: replyTo,
-          callback: sendArray,
-          callbackNotice: noticeArray,
-          sendSettings: settings,
-          perm: getPermLevel(nick)
-        }, true);
-      } catch (err) {
-        var replyArray = [err, 'this error has been logged'];
-        addToReportLog([err.message, message.args.splice(1).join(' ')], nick, true);
-        noticeArray(replyArray, nick, settings);
-      }
-    });
-  }
-}
+      forceNotice = false;
 
-function sendArray(arr, replyTo, settings) {
-  // Send array one item at a time
-  arr.forEach(function(reply) {
-    botLog(reply);
-    if (settings) {
-      if (settings.bold)
-        reply = '\x02' + reply;
-      if (settings.italics)
-        reply = '\x1D' + reply;
-      if (settings.underline)
-        reply = '\x1F' + reply;
-    }
-    client.say(replyTo, reply);
-  });
-}
-
-function noticeArray(arr, replyTo, settings) {
-  // Send array one item at a time
-  arr.forEach(function(reply) {
-    botLog(reply);
-    if (settings) {
-      if (settings.bold)
-        reply = '\x02' + reply;
-      if (settings.italics)
-        reply = '\x1D' + reply;
-      if (settings.underline)
-        reply = '\x1F' + reply;
-    }
-    client.notice(replyTo, reply);
-  });
-}
-
-/**
- * To do when bot recieves a message
- */
-function onJoin(channel, nick, message) {
-  var replyArray = bot.getWelcome(nick);
-  if (replyArray.length)
-    replyArray.forEach(function(reply) {
-      client.say(channel, reply);
-    });
-
-  botLog(nick + ' joined ' + channel);
-}
-
-/**
- * Add message array to log
- */
-function addToReportLog(messageArray, from, isCrash) {
-  var fs = require('fs');
-  var reports;
-  try {
-    reports = JSON.parse(fs.readFileSync('reports.json'));
-  } catch (err) {
-    reports = [];
-  }
-  var dateString = new Date(Date.now()).toISOString();
-  var newReport = {
-    'from': from,
-    'at': dateString,
-    'messages': messageArray,
-    'type': 'user report'
-  };
-  if (isCrash)
-    newReport.type = 'crash';
-  reports.push(newReport);
-  fs.writeFileSync('reports.json', JSON.stringify(reports, null, 2));
-}
-
-/**
- * Add message array to log
- */
-function addToGunterLog(message) {
-  var fs = require('fs');
-  var reports;
-  try {
-    reports = JSON.parse(fs.readFileSync('gunter.json'));
-  } catch (err) {
-    reports = [];
-  }
-  reports.push(message);
-  fs.writeFileSync('gunter.json', JSON.stringify(reports, null, 2));
-}
-
-function botLog(text) {
-  console.log(new Date(Date.now()).toLocaleTimeString() + ': ' + text);
-}
-
-function isAdmin(nick) {
-  var ret = false;
-  settings.admins.forEach(function(admin) {
-    if (nick === admin) {
-      ret = true;
-    }
-  });
-  return ret;
-}
-
-function getPermLevel(nick) {
-  if (isAdmin(nick))
-    return 10;
-  var fs = require('fs');
-  var perms;
-  try {
-    perms = JSON.parse(fs.readFileSync('perms.json'));
-  } catch (err) {
-    perms = {};
-  }
-  if (perms[nick])
-    return perms[nick];
-  else
-    return 0;
-}
-
-function reloadBot() {
-  try {
-    cb = new cleverbot(settings.cleverbot.user, settings.cleverbot.key, settings.cleverbot.session);
-    cb.create(function(err, session) {});
-
-    bot = reload('./bot.js');
-    bot.externalFunctions = {
-      'addToReportLog': addToReportLog,
-      'reloadBot': reloadBot,
-      'isAdmin': isAdmin,
-      'cb': settings.cleverbot
+    var toSend = {
+      user: nick,
+      key: settings.key,
+      text: text
     };
-  } catch (e) {
-    addToReportLog(['failed to reload'], 'bot', false);
-  }
-}
 
-function readConsole() {
-  var readline = require('readline');
-  var rl = readline.createInterface(process.stdin, process.stdout);
-  rl.setPrompt('');
-  rl.prompt();
-  rl.on('line', function(line) {
-    if (line.match(/(^\?$|^help$)/))
-      console.log('\r\nHelp\r\n' +
-        'exit    (x): Stop bot\r\n' +
-        'reload (r): Reload the bot\r\n' +
-        'help    (?): Show this message again\r\n'
-      );
-    else if (line.match(/(^x$|^exit$)/)) {
-      clients.forEach(function(aBot) {
-        aBot.disconnect('well, we\'re OUT of cake');
+    var req = https.request({
+      hostname: 'api.secretonline.co',
+      port: 443,
+      path: '/secretbot/',
+      method: 'POST'
+    }, function(response) {
+      var resBody = '';
+      response.on('data', function(data) {
+        resBody += data;
+      }).on('end', function() {
+        var obj = JSON.parse(resBody);
+        if (forceNotice) {
+          obj.private = true;
+        }
+        send(obj);
       });
-      rl.close();
-    } else
-    if (line.match(/^r(ebuild)?$/))
-      updateBot();
-    else
-      console.log('Unknown command. Type \'help\' to see available commands');
-    rl.prompt();
-  }).on('close', function() {
-    process.exit(0);
-  });
+    });
+    req.write(JSON.stringify(toSend));
+    req.end();
+  }
 }
