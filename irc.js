@@ -61,19 +61,6 @@ function onMessage(nick, to, text, message) {
 
   var forceNotice = true;
 
-  function send(obj) {
-    if (obj.status === 'success') {
-      obj.data.forEach(function(item) {
-        console.log(item);
-        if (obj.private) {
-          client.notice(nick, item);
-        } else {
-          client.say(to, item);
-        }
-      });
-    }
-  }
-
   // Only operate when ` or ~ is the first character
   if (text.charAt(0) === '`' || text.charAt(0) === '~') {
     // If using ~ from a channel, send back to a channel
@@ -83,7 +70,8 @@ function onMessage(nick, to, text, message) {
     var toSend = {
       user: nick,
       key: settings.key,
-      text: text
+      text: text,
+      type: 'text'
     };
 
     var req = https.request({
@@ -96,6 +84,20 @@ function onMessage(nick, to, text, message) {
       response.on('data', function(data) {
         resBody += data;
       }).on('end', function() {
+
+        function send(obj) {
+          if (obj.status === 'success') {
+            obj.data.forEach(function(item) {
+              console.log(item);
+              if (obj.private) {
+                client.notice(nick, item);
+              } else {
+                client.say(to, item);
+              }
+            });
+          }
+        }
+
         var obj = JSON.parse(resBody);
         if (forceNotice) {
           obj.private = true;
@@ -106,4 +108,41 @@ function onMessage(nick, to, text, message) {
     req.write(JSON.stringify(toSend));
     req.end();
   }
+}
+
+/**
+ * Get the greetig for the user, if exists
+ */
+function onJoin(channel, nick, message) {
+  var toSend = {
+    user: nick,
+    type: 'greet'
+  };
+
+  var req = https.request({
+    hostname: 'api.secretonline.co',
+    port: 443,
+    path: '/secretbot/',
+    method: 'POST'
+  }, function(response) {
+    var resBody = '';
+    response.on('data', function(data) {
+      resBody += data;
+    }).on('end', function() {
+
+      function send(obj) {
+        if (obj.status === 'success') {
+          obj.data.forEach(function(item) {
+            console.log(item);
+            client.say(channel, item);
+          });
+        }
+      }
+
+      var obj = JSON.parse(resBody);
+      send(obj);
+    });
+  });
+  req.write(JSON.stringify(toSend));
+  req.end();
 }
