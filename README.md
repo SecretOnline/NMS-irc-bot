@@ -1,5 +1,11 @@
 #NMS-irc-bot
 
+---
+
+##This repo is still here for legacy purposes. It is now maintained in [secret_bot](https://github.com/SecretOnline/secret_bot) and [IRCord](https://github.com/SecretOnline/IRCord).
+
+---
+
 An IRC bot written in Javascript.
 
 Uses the following Node.js modules:
